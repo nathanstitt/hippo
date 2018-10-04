@@ -1,0 +1,140 @@
+- args:
+    name: tenantsBytenantId
+    table:
+      name: accounts
+      schema: public
+    using:
+      foreign_key_constraint_on: tenant_id
+  type: create_object_relationship
+- args:
+    name: entriessByaccountId
+    table:
+      name: accounts
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: account_id
+        table:
+          name: entries
+          schema: public
+  type: create_array_relationship
+- args:
+    name: accountsByaccountId
+    table:
+      name: entries
+      schema: public
+    using:
+      foreign_key_constraint_on: account_id
+  type: create_object_relationship
+- args:
+    name: usersBycreatedById
+    table:
+      name: entries
+      schema: public
+    using:
+      foreign_key_constraint_on: created_by_id
+  type: create_object_relationship
+- args:
+    name: entryTagssByentryId
+    table:
+      name: entries
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: entry_id
+        table:
+          name: entry_tags
+          schema: public
+  type: create_array_relationship
+- args:
+    name: entriesByentryId
+    table:
+      name: entry_tags
+      schema: public
+    using:
+      foreign_key_constraint_on: entry_id
+  type: create_object_relationship
+- args:
+    name: tagsBytagId
+    table:
+      name: entry_tags
+      schema: public
+    using:
+      foreign_key_constraint_on: tag_id
+  type: create_object_relationship
+- args:
+    name: tenantsBytenantId
+    table:
+      name: tags
+      schema: public
+    using:
+      foreign_key_constraint_on: tenant_id
+  type: create_object_relationship
+- args:
+    name: entryTagssBytagId
+    table:
+      name: tags
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: tag_id
+        table:
+          name: entry_tags
+          schema: public
+  type: create_array_relationship
+- args:
+    name: accountssBytenantId
+    table:
+      name: tenants
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: tenant_id
+        table:
+          name: accounts
+          schema: public
+  type: create_array_relationship
+- args:
+    name: tagssBytenantId
+    table:
+      name: tenants
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: tenant_id
+        table:
+          name: tags
+          schema: public
+  type: create_array_relationship
+- args:
+    name: userssBytenantId
+    table:
+      name: tenants
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: tenant_id
+        table:
+          name: users
+          schema: public
+  type: create_array_relationship
+- args:
+    name: tenantsBytenantId
+    table:
+      name: users
+      schema: public
+    using:
+      foreign_key_constraint_on: tenant_id
+  type: create_object_relationship
+- args:
+    name: entriessBycreatedById
+    table:
+      name: users
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: created_by_id
+        table:
+          name: entries
+          schema: public
+  type: create_array_relationship

@@ -1,0 +1,3 @@
+port: 12345
+db_conn_url: "postgres://nas@localhost/trueline?sslmode=disable"
+session_secret: 32-byte-long-auth-key-123-45-712

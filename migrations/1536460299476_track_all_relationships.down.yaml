@@ -1,0 +1,84 @@
+- args:
+    relationship: tenantsBytenantId
+    table:
+      name: accounts
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: entriessByaccountId
+    table:
+      name: accounts
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: accountsByaccountId
+    table:
+      name: entries
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: usersBycreatedById
+    table:
+      name: entries
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: entryTagssByentryId
+    table:
+      name: entries
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: entriesByentryId
+    table:
+      name: entry_tags
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: tagsBytagId
+    table:
+      name: entry_tags
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: tenantsBytenantId
+    table:
+      name: tags
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: entryTagssBytagId
+    table:
+      name: tags
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: accountssBytenantId
+    table:
+      name: tenants
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: tagssBytenantId
+    table:
+      name: tenants
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: userssBytenantId
+    table:
+      name: tenants
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: tenantsBytenantId
+    table:
+      name: users
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: entriessBycreatedById
+    table:
+      name: users
+      schema: public
+  type: drop_relationship

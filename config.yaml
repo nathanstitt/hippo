@@ -1,0 +1,5 @@
+endpoint: http://localhost:8081
+port: 12345
+db_conn_url: "postgres://nas@localhost/spendily_dev?sslmode=disable"
+session_secret: 32-byte-long-auth-key-123-45-712
+graphql_access_key: mysecretkey

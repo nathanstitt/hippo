@@ -1,0 +1,5 @@
+- args:
+    table:
+      name: entry_tags
+      schema: public
+  type: untrack_table

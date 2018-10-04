@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spendily</title>
+    {{ asset "home.js" }}
+  </head>
+  <body class="home">
+
+    <div class="content">
+
+      <ul class="tab-group">
+        <li class="tab signup{{ if not .signin }} active{{ end }}"><a href="#signup">Sign Up</a></li>
+        <li class="tab login{{ if .signin }} active{{ end }}"><a href="#login">Log In</a></li>
+      </ul>
+
+      {{ if .error }}
+      <p class="error">{{ .error }}</p>
+      {{ end }}
+
+      <div class="tab-content">
+        <div id="signup">
+          <h1>Sign Up for Free</h1>
+
+          <form action="/signup" method="post">
+
+            <div class="top-row">
+              <div class="field-wrap">
+                <label class="{{ if .signup.Name }}active{{ end }}">
+                  Name
+                </label>
+                <input type="text" name="name" required value="{{ .signup.Name }}" />
+              </div>
+
+              <div class="field-wrap">
+                <label class="{{ if .signup.Email }}active{{ end }}">
+                  Email Address
+                </label>
+                <input type="email" name="email" required value="{{ .signup.Email }}" />
+              </div>
+            </div>
+
+            <div class="field-wrap">
+                <label class="{{ if .signup.Tenant }}active{{ end }}">
+                Organization
+              </label>
+              <input type="text" name="tenant" required value="{{ .signup.Tenant }}" />
+            </div>
+
+            <div class="field-wrap">
+                <label class="{{ if .signup.Password }}active{{ end }}">
+                Set A Password
+              </label>
+              <input type="password" name="password" required value="{{ .signup.Password }}" />
+            </div>
+
+            <button type="submit" class="button button-block">Get Started</button>
+
+          </form>
+
+        </div>
+
+        <div id="login" class="hidden">
+          <h1>Welcome Back!</h1>
+
+          <form action="/login" method="post">
+
+            <div class="field-wrap">
+              <label class="{{ if .signin.Tenant }}active{{ end }}">
+                Organization Identifier
+              </label>
+              <input type="text" name="tenant" required value="{{ .signin.Tenant }}" />
+            </div>
+
+            <div class="field-wrap">
+              <label class="{{ if .signin.Email }}active{{ end }}">
+                Email Address
+              </label>
+              <input type="email" required value="{{ .signin.Email }}" />
+            </div>
+
+            <div class="field-wrap">
+              <label class="{{ if .signin.Password }}active{{ end }}">
+                Password
+              </label>
+              <input type="password" required value="{{ .signin.Password }}" />
+            </div>
+
+            <p class="forgot"><a href="/forgot-password">Forgot Password?</a></p>
+            <button class="button button-block">Log In</button>
+          </form>
+
+        </div>
+
+      </div><!-- tab-content -->
+
+    </div><!-- /form -->
+
+  </body>
+</html>
