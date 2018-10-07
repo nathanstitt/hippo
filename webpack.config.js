@@ -15,10 +15,11 @@ const publicURLPath = production ?
 
 module.exports = {
     entry: {
+        application: 'application.js',
         home: 'home.js',
     },
     mode: production ? 'production' : 'development',
-            module: {
+    module: {
         rules: [
             {
                 test: /\.(sa|sc|c)ss$/,
@@ -28,9 +29,14 @@ module.exports = {
                     'sass-loader',
                 ],
             }, {
-                loader: 'babel-loader',
                 test: /\.jsx?$/,
                 exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ['@babel/preset-env']
+                    },
+                },
             },
         ]
     },

@@ -71,7 +71,7 @@ func addRoutes(r *gin.Engine, config *cli.Context) { // c *cli.Context, db *gorm
 		if (u == nil) {
 			c.HTML(http.StatusOK, "home.html", gin.H{})
 		} else {
-			c.HTML(http.StatusOK, "application.html", gin.H{})
+			renderApplication(u, c)
 		}
 	})
 }

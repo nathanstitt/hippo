@@ -6,11 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta id="bootstrapData" content="{{ .bootstrapData }}">
     <title>Spendily</title>
+    {{ asset "application.js" }}
   </head>
   <body>
     {{ .bootstrapData }}
     <form action="/logout" method="post">
       <input type="submit" value="Logout">
     </form>
+    <div id="root">
+    </div>
   </body>
 </html>

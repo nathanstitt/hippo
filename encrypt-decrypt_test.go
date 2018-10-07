@@ -2,41 +2,27 @@ package main
 
 import (
 	_ "fmt" // for adhoc printing
-	"testing"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestEncryptDecrypt(t *testing.T) {
+var _ = Describe("Encryption-Decryption", func() {
 
-	Convey("it can encrypt/decrypt", t, func() {
+	It("can encrypt/decrypt", func() {
 		domain := "test.com"
-		encrypted, err := Encrypt(map[string]interface{}{"d": domain})
-		if err != nil {
-			t.Fatal(err)
-		}
-		decrypted, err := DecryptStringProperty(encrypted, "d")
-		if err != nil {
-			t.Fatal(err)
-		}
-		So(domain, ShouldEqual, decrypted)
+		encrypted, _ := Encrypt(map[string]interface{}{"d": domain})
+		decrypted, _ := DecryptStringProperty(encrypted, "d")
+		Expect(domain).To(Equal(decrypted))
 	})
 
-	Convey("it can encrypt/decrypt users", t, func() {
+	It("can encrypt/decrypt users", func() {
 		user := User{
-
 			Name: "My Name", Email:"test@test.com",
 		}
-		encrypted, err := JWTforUser(&user)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		decrypted, err := UserforJWT(encrypted)
-		if err != nil {
-			t.Fatal(err)
-		}
-		So(user.ID, ShouldEqual, decrypted.ID)
-		So(user.Name, ShouldEqual, decrypted.Name)
-		So(user.Email, ShouldEqual, decrypted.Email)
+		encrypted, _ := JWTforUser(&user)
+		decrypted, _ := UserforJWT(encrypted)
+		Expect(user.ID).To(Equal(decrypted.ID))
+		Expect(user.Name).To(Equal(decrypted.Name))
+		Expect(user.Email).To(Equal(decrypted.Email))
 	})
-}
+})

@@ -76,6 +76,7 @@ func startGraphql(c *cli.Context) *exec.Cmd {
 		fmt.Sprintf("HASURA_GRAPHQL_JWT_SECRET=%s", jwtSecret),
 	)
 
+	fmt.Printf("STARTED GQL: %s\n", c.String("graphql_access_key"))
 	// Create stdout, stderr streams of type io.Reader
 	stdout, err := hasura.StdoutPipe()
 	checkError(err)

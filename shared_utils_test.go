@@ -8,7 +8,8 @@ import (
 	"github.com/jinzhu/gorm"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 type FakeEmailSender struct {

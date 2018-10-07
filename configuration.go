@@ -50,6 +50,11 @@ func setupConfiguration() *cli.App {
 			Value:  "",
 			Usage:  "32 char long string to use for encrypting session",
 		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "graphql_access_key",
+			Value:  "mysecretkey",
+			Usage:  "32 char long string to use for encrypting session",
+		}),
 		cli.StringFlag{
 			Name:   "config",
 			Value: "./config.yaml",
