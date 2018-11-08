@@ -1,4 +1,4 @@
-package main
+package hippo
 
 import (
 	"log"
@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getConfig(c *gin.Context) *cli.Context {
+func GetConfig(c *gin.Context) *cli.Context {
 	config, ok := c.MustGet("config").(*cli.Context)
 	if ok {
 		return config
@@ -20,7 +20,7 @@ func getConfig(c *gin.Context) *cli.Context {
 	panic("config isn't the correct type")
 }
 
-func getDB(c *gin.Context) *gorm.DB {
+func GetDB(c *gin.Context) *gorm.DB {
 	tx, ok := c.MustGet("dbTx").(*gorm.DB)
 	if ok {
 		return tx
@@ -28,7 +28,7 @@ func getDB(c *gin.Context) *gorm.DB {
 	panic("config isn't the correct type")
 }
 
-func contextMiddleware(config *cli.Context, db *gorm.DB) gin.HandlerFunc {
+func RoutingMiddleware(config *cli.Context, db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tx := db.Begin()
 		c.Set("dbTx", tx)
@@ -43,13 +43,12 @@ func contextMiddleware(config *cli.Context, db *gorm.DB) gin.HandlerFunc {
 		}()
 		c.Next()
 		if (c.Writer.Status() < 400) {
-			fmt.Printf("COMMIT\n")
 			tx.Commit();
 		}
 	}
 }
 
-func renderErrorPage(message string, c *gin.Context, err *error) {
+func RenderErrorPage(message string, c *gin.Context, err *error) {
 	if err != nil {
 		log.Printf("Error occured: %s", *err)
 	}
@@ -79,23 +78,33 @@ func reverseProxy(port int) gin.HandlerFunc {
 	}
 }
 
-func renderHomepage(signup *SignupData, err *error, c *gin.Context) {
+func RenderHomepage(signup *SignupData, err *error, c *gin.Context) {
 	c.HTML(http.StatusOK, "home.html", gin.H{
 		"signup": signup,
 		"error": err,
 	})
 }
 
-func renderApplication(user *User, c *gin.Context) {
-	bootstrapData, err := json.Marshal(ApplicationBootstrapData{
-		User: *user,
-		JWT: user.JWT(getConfig(c)),
-	})
-	if err != nil {
-		renderErrorPage("Failed to generate page data", c, nil)
-		return
-	}
+func RenderApplication(user *User, c *gin.Context) {
+	cfg := GetConfig(c)
 	c.HTML(http.StatusOK, "application.html", gin.H{
-		"bootstrapData": template.HTML(string(bootstrapData)),
+		"webDomain": cfg.String("web_domain"),
+		"bootstrapData": BootstrapData(user, cfg),
 	})
+}
+
+func BootstrapData(user *User, cfg *cli.Context) template.JS {
+	type BootstrapDataT map[string]interface{}
+	bootstrapData, err := json.Marshal(
+		BootstrapDataT{
+			"user": user,
+			"graphql" : BootstrapDataT{
+				"token": user.JWT(cfg),
+				"endpoint": cfg.String("web_domain"),
+			},
+		})
+	if err != nil {
+		panic(err)
+	}
+	return template.JS(string(bootstrapData))
 }

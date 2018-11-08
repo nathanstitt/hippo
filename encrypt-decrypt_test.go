@@ -1,4 +1,4 @@
-package main
+package hippo
 
 import (
 	_ "fmt" // for adhoc printing

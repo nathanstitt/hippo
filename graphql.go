@@ -1,62 +1,16 @@
-package main
+package hippo
 
 import (
 	"io"
 	"os"
-	"log"
 	"fmt"
+	"log"
 	"os/exec"
 	"encoding/json"
 	"gopkg.in/urfave/cli.v1"
 )
 
-func checkError(err error) {
-    if err != nil {
-	log.Fatalf("Error: %s", err)
-    }
-}
-
-func cleanup() {
-	fmt.Println("cleanup")
-//	hasura.Process.Kill()
-}
-
-//var hasura exec.Cmd;
-
-
-
-type Data struct {
-    output []byte
-    error  error
-}
-
-
-// func runCommand(port string, ch chan<- Data) {
-//	hasura := exec.Command(
-//		"graphql-engine", "serve",
-//		"--server-port", port,
-//		"--database-url", "postgres://nas@localhost/spendily_dev",
-//	)
-//	var outb, errb bytes.Buffer
-//	hasura.Stdout = &outb
-//	hasura.Stderr = &errb
-
-//	err := hasura.Start()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-
-
-//	ch <- Data{
-//		error:  err,
-//		output: data,
-//	}
-// }
-
-
-
-
-func startGraphql(c *cli.Context) *exec.Cmd {
+func StartGraphql(c *cli.Context) *exec.Cmd {
 	jwtSecret, _ := json.Marshal(
 		map[string]string{
 			"type": "HS256",
@@ -68,7 +22,7 @@ func startGraphql(c *cli.Context) *exec.Cmd {
 	hasura := exec.Command(
 		"graphql-engine", "serve",
 		"--server-port", fmt.Sprintf("%d", c.Int("graphql_port")),
-		"--database-url", "postgres://nas@localhost/spendily_dev",
+		"--database-url", c.String("db_conn_url"),
 	)
 
 	hasura.Env =  append(os.Environ(),
@@ -79,13 +33,13 @@ func startGraphql(c *cli.Context) *exec.Cmd {
 	fmt.Printf("STARTED GQL: %s\n", c.String("graphql_access_key"))
 	// Create stdout, stderr streams of type io.Reader
 	stdout, err := hasura.StdoutPipe()
-	checkError(err)
+	CheckError(err)
 	stderr, err := hasura.StderrPipe()
-	checkError(err)
+	CheckError(err)
 
 	// Start command
 	err = hasura.Start()
-	checkError(err)
+	CheckError(err)
 
 	// Don't let main() exit before our command has finished running
 	//defer hasura.Wait()  // Doesn't block

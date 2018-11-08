@@ -1,11 +1,18 @@
-package main
+package hippo
 
 import (
+	"strings"
+	"github.com/gin-gonic/gin"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/urfave/cli/altsrc"
 )
 
-func setupConfiguration() *cli.App {
+var IsDevMode = false
+var SessionsKeyValue = []byte("32-byte-long-auth-key-123-45-712")
+
+func Initialize() *cli.App {
+	IsDevMode = 0 != strings.Compare(gin.Mode(), "release")
+
 	app := cli.NewApp()
 	app.Name = "spendily"
 	app.Version = "0.0.1"
@@ -21,24 +28,29 @@ func setupConfiguration() *cli.App {
 			Usage:  "port to listen to",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
-			Name:   "Spendily",
-			Value:  "product_name",
+			Name:   "product_name",
+			Value:  "Hippo Fun Time!",
 			Usage:  "The name of the product",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
-			Name:   "",
-			Value:  "logo_url",
+			Name:   "logo_url",
+			Value:  "",
 			Usage:  "url for logo",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
-			Name:   "spendily.com",
-			Value:  "domain",
+			Name:   "web_domain",
+			Value:  "localhost",
 			Usage:  "The domain to use for URLs",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
 			Name:   "bind_address",
 			Value:  "localhost",
 			Usage:  "ip address to bind to",
+		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "session_cookie_name",
+			Value:  "hippo",
+			Usage:  "name of session cookie",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
 			Name:   "db_conn_url",

@@ -1,4 +1,4 @@
-package main_test
+package hippo_test
 
 import (
 	"testing"

@@ -1,8 +1,7 @@
-package main
+package hippo
 
 import (
-	"fmt"
-
+//	"fmt"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -13,12 +12,12 @@ func (u *User) JWT(config *cli.Context) string {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"name": u.Name,
-		"admin": u.Roles().Admin,
+		"admin": u.IsAdmin(),
 		"graphql_claims": jwt.MapClaims{
-			"x-hasura-allowed-roles": u.RoleNames,
-			"x-hasura-default-role": u.RoleNames[0],
-			"x-hasura-user-id": fmt.Sprintf("%d", u.ID),
-			"x-hasura-org-id": fmt.Sprintf("%d", u.Tenant.ID),
+			"x-hasura-default-role": u.RoleName(),
+			"x-hasura-allowed-roles": u.AllowedRoleNames(),
+			"x-hasura-user-id": u.ID,
+			"x-hasura-org-id": u.Tenant.ID,
 		},
 	})
 

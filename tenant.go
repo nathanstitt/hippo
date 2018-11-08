@@ -1,4 +1,4 @@
-package main
+package hippo
 
 import (
 	// "fmt"
@@ -13,15 +13,15 @@ import (
 
 type Subscription struct {
 	ID uint `gorm:"primary_key"`
-	subscription_id string
-	name string
-	description string
-	price float32
-	trial_duration int8
+	SubscriptionID string
+	Name string
+	Description string
+	Price float32
+	TrialDuration int8
 }
 
 type Tenant struct {
-	ID uint `gorm:"primary_key" json:"id"`
+	ID string `gorm:"type:uuid;primary_key" json:"id"`
 	Users []User `json:"-"`
 	Name   string `json:"name"`
 	Email  string `json:"email"`
@@ -31,10 +31,6 @@ type Tenant struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (t *Tenant) isNew() bool {
-	return 0 == t.ID;
-}
-
 type SignupData struct {
 	Name         string `form:"name"`
 	Email        string `form:"email"`
@@ -42,9 +38,12 @@ type SignupData struct {
 	Tenant       string `form:"tenant"`
 }
 
+
+
 type ApplicationBootstrapData struct {
 	User User
 	JWT string
+	WebDomain string
 }
 
 func isEmailInUse(email string, db *gorm.DB) bool {
@@ -73,33 +72,46 @@ func CreateTenant(data *SignupData, db *gorm.DB) (*Tenant, error) {
 	}
 	db.Create(&tenant)
 
-	user := &User{
+	admin := User{
 		Name: data.Name,
 		Email: data.Email,
 		Tenant: *tenant,
-		RoleNames: []string{"admin"},
+		RoleID: AdminRoleID,
 	}
-	user.SetPassword(data.Password)
-	db.Model(tenant).Association("Users").Append(user)
+	admin.SetPassword(data.Password)
+
+	db.Model(tenant).Association("Users").Append(
+		[]User{
+			admin,
+			{
+				Name: "Anonymous",
+				Tenant: *tenant,
+				RoleID: GuestRoleID,
+			},
+		},
+	)
+
 	if (db.Error != nil) {
 		return nil, db.Error
 	}
 	return tenant, nil
 }
 
-func TenantSignupHandler(c *gin.Context) {
-	var form SignupData
-	if err := c.ShouldBind(&form); err != nil {
-		renderErrorPage("Failed to read signup data, please retry", c, &err)
-		return
+func TenantSignupHandler(afterSignUp string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		var form SignupData
+		if err := c.ShouldBind(&form); err != nil {
+			RenderErrorPage("Failed to read signup data, please retry", c, &err)
+			return
+		}
+		tx := GetDB(c)
+		tenant, err := CreateTenant(&form, tx)
+		if err != nil {
+			RenderHomepage(&form, &err, c);
+			return
+		}
+		LoginUser(&tenant.Users[0], c)
+		c.Redirect(http.StatusFound, afterSignUp)
+		RenderApplication(&tenant.Users[0], c)
 	}
-	tx := getDB(c)
-	tenant, err := CreateTenant(&form, tx)
-	if err != nil {
-		renderHomepage(&form, &err, c);
-		return
-	}
-	LoginUser(&tenant.Users[0], c)
-	c.Redirect(http.StatusFound, "/")
-	renderApplication(&tenant.Users[0], c)
 }

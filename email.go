@@ -1,4 +1,4 @@
-package main
+package hippo
 
 import (
 	"os"
@@ -46,7 +46,7 @@ func (s *LocalhostEmailSender) SendEmail(
 
 	d := mail.Dialer{Host: "localhost", Port: 25}
 
-	if isDevMode {
+	if IsDevMode {
 		m.WriteTo(os.Stdout)
 		return nil
 	}
