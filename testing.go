@@ -2,16 +2,19 @@ package hippo
 
 import (
 	"io"
+
 //	"fmt"
 	"flag"
+	"bytes"
 	"net/http"
 	"io/ioutil"
+	"html/template"
 	"net/http/httptest"
 	"github.com/jinzhu/gorm"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/onsi/ginkgo"
 	"github.com/gin-gonic/gin"
-	"github.com/argosity/webpacking"
+	"github.com/nathanstitt/webpacking"
 )
 
 type FakeEmailSender struct {
@@ -44,7 +47,7 @@ type TestEnv struct {
 }
 
 type RequestOptions struct {
-	Body io.Reader
+	Body *string
 	SessionCookie string
 	User *User
 }
@@ -54,13 +57,21 @@ func (env *TestEnv) MakeRequest(
 	path string,
 	options *RequestOptions,
 ) *httptest.ResponseRecorder {
-
-
-	req, _ := http.NewRequest(method, path, nil)
-	if options != nil && options.User != nil {
-		req.Header.Set("Cookie",
-			TestingCookieForUser(options.User, env.Config),
-		)
+	var body io.Reader
+	if options != nil {
+		if options.Body != nil {
+			body = bytes.NewReader([]byte(*options.Body))
+		}
+	}
+	req, _ := http.NewRequest(method, path, body)
+	if options != nil {
+		if options.User != nil {
+			req.Header.Set("Cookie",
+				TestingCookieForUser(
+					options.User, env.Config,
+				),
+			)
+		}
 	}
 	resp := httptest.NewRecorder()
 	env.Router.ServeHTTP(resp, req)
@@ -70,7 +81,7 @@ func (env *TestEnv) MakeRequest(
 type TestFlags struct {
 	WithRoutes func(
 		*gin.Engine,
-		*cli.Context,
+		Configuration,
 		*webpacking.WebPacking,
 	)
 }
@@ -100,19 +111,16 @@ var TestingEnvironment = &TestSetupEnv{
 
 
 func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
-
 	testEmail = &FakeEmailSender{}
 	EmailSender = testEmail;
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = ioutil.Discard
 	set := flag.NewFlagSet("test", 0)
-
-	set.String("session_secret", TestingEnvironment.SessionSecret, "doc")
-
 	set.String(
-		"db_conn_url",
-		TestingEnvironment.DBConnectionUrl,
-		"doc",
+		"session_secret", TestingEnvironment.SessionSecret, "doc",
+	)
+	set.String(
+		"db_conn_url", TestingEnvironment.DBConnectionUrl, "doc",
 	)
 
 	config := cli.NewContext(nil, set, nil)
@@ -133,14 +141,19 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 
 	if flags.WithRoutes != nil {
 		router = gin.New()
+
+
 		router.Use(testingContextMiddleware(config, tx))
 		InitSessions("test", router, config)
-
+		IsDevMode = true
 		fake := webpacking.InstallFakeAssetReader()
-
-		webpack = InitWebpack(router, config)
-
 		defer fake.Restore()
+		router.SetFuncMap(template.FuncMap{
+			"asset": func(asset string) (template.HTML, error) {
+				return template.HTML(asset), nil
+			},
+		})
+		router.LoadHTMLGlob("templates/*")
 
 		flags.WithRoutes(router, config, webpack)
 	}

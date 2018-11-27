@@ -1,5 +1,0 @@
-- args:
-    table:
-      name: tenants
-      schema: public
-  type: untrack_table

@@ -33,7 +33,8 @@ func makeRequest(data url.Values, router *gin.Engine) *httptest.ResponseRecorder
 
 func TestSignupHandler(t *testing.T) {
 
-	it("it emails a login link", t, func(env *TestEnv) {
+
+	Test("it emails a login link", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
 		r := env.Router
 		db := env.DB
 		email := "test1234@test.com"
@@ -43,7 +44,7 @@ func TestSignupHandler(t *testing.T) {
 		user := FindUserByEmail(email, db)
 		So(user.ID, ShouldNotEqual, 0)
 		So(resp.Code, ShouldEqual, http.StatusOK)
-		if user.ID == 0 {
+		if db.NewRecord(user) {
 			fmt.Printf("BODY: %s", resp.Body.String())
 		}
 		So(resp.Header().Get("Set-Cookie"), ShouldNotBeEmpty)
@@ -51,7 +52,7 @@ func TestSignupHandler(t *testing.T) {
 		So(resp.Body.String(), ShouldContainSubstring, email)
 	})
 
-	it("errors when email is duplicate", t, func(env *TestEnv) {
+	Test("errors when email is duplicate", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
 		email := "nathan1234@stitt.org"
 		form := &SignupData{
 			Name: "Nathan",

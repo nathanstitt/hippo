@@ -1,5 +1,0 @@
-- args:
-    table:
-      name: accounts
-      schema: public
-  type: untrack_table

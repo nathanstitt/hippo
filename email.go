@@ -3,21 +3,25 @@ package hippo
 import (
 	"os"
 	"fmt"
+	"time"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/go-mail/mail"
 	"github.com/matcornic/hermes"
 )
 
 
-func makeEmailMessage(config *cli.Context) hermes.Hermes {
+func MakeEmailMessage(tenant *Tenant, config *cli.Context) hermes.Hermes {
 	return hermes.Hermes{
 		Product: hermes.Product{
 			// Appears in header & footer of e-mails
-			Name: config.String("product_name"),
-			Link: fmt.Sprintf("https://%s/", config.String("domain")),
-			Logo: fmt.Sprintf("https://%s%s", config.String("domain"),
-				config.String("logo_url")),
-			Copyright: "Copyright © 2018 Argosity. All rights reserved.",
+			Name: tenant.Name,
+			Link: tenant.HomepageURL,
+			Logo: tenant.LogoURL,
+			Copyright: fmt.Sprintf(
+				"Copyright © %d %s. All rights reserved.",
+				time.Now().Year(),
+				config.String("product_name"),
+			),
 		},
 	}
 }
@@ -55,21 +59,21 @@ func (s *LocalhostEmailSender) SendEmail(
 
 var EmailSender EmailSenderInterface = &LocalhostEmailSender{}
 
-func deliverResetEmail(email string, token string, config *cli.Context) error {
-	mailBody, err := passwordResetEmail(email, token, config)
+func deliverResetEmail(user *User, token string, config *cli.Context) error {
+	mailBody, err := passwordResetEmail(user, token, config)
 	if (err != nil) {
 		return err;
 	}
 	return EmailSender.SendEmail(
 		config,
-		email,
+		user.Email,
 		fmt.Sprintf("Password Reset for %s", config.String("product_name")),
 		mailBody,
 	)
 }
 
-func deliverLoginEmail(email string, config *cli.Context) error {
-	mailBody, err := signupEmail(email, config)
+func deliverLoginEmail(email string, tenant *Tenant, config *cli.Context) error {
+	mailBody, err := signupEmail(email, tenant, config)
 	if (err != nil) {
 		return err;
 	}

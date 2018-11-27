@@ -70,12 +70,11 @@ func (u *User) AllowedRoleNames() []string {
 }
 
 func (u *User) String() string {
-    return fmt.Sprintf("User<%d %s %v>", u.ID, u.Name, u.Email)
+    return fmt.Sprintf("User<%s %s %v>", u.ID, u.Name, u.Email)
 }
 
 func (u *User) ValidatePassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordDigest), []byte(password))
-	log.Printf("Validate PW: %v\n", err)
 	return err == nil;
 }
 
@@ -165,12 +164,13 @@ func UserDisplayPasswordResetHandler(c *gin.Context) {
 
 func UserPasswordResetHandler() func (c *gin.Context) {
 	return func (c *gin.Context) {
+		db := GetDB(c)
 		password := c.PostForm("password")
 		if password != "" {
 			user := UserFromSession(c)
 			if user != nil {
 				user.SetPassword(password)
-				GetDB(c).Save(user)
+				db.Save(user)
 				c.Redirect(http.StatusFound, "/")
 				return
 			}
@@ -178,11 +178,13 @@ func UserPasswordResetHandler() func (c *gin.Context) {
 		email := c.PostForm("email")
 		token, _ := EncryptStringProperty("email", email)
 
-		err := deliverResetEmail(email, token, GetConfig(c))
-
-		if err != nil {
-			RenderErrorPage("Failed to deliver email, please retry", c, &err)
-			return
+		user := FindUserByEmail(email, db)
+		if !db.NewRecord(user) {
+			err := deliverResetEmail(user, token, GetConfig(c))
+			if err != nil {
+				RenderErrorPage("Failed to deliver email, please retry", c, &err)
+				return
+			}
 		}
 		if IsDevMode {
 			fmt.Printf("link: /forgot-password?t=%s\n", token)

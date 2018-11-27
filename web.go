@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
-	"github.com/argosity/webpacking"
+	"github.com/nathanstitt/webpacking"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 )

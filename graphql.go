@@ -4,11 +4,11 @@ import (
 	"io"
 	"os"
 	"fmt"
-	"log"
 	"os/exec"
 	"encoding/json"
 	"gopkg.in/urfave/cli.v1"
 )
+
 
 func StartGraphql(c *cli.Context) *exec.Cmd {
 	jwtSecret, _ := json.Marshal(

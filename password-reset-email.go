@@ -6,14 +6,15 @@ import (
 	"github.com/matcornic/hermes"
 )
 
-func passwordResetEmail(email string, token string, config *cli.Context) (string, error) {
+func passwordResetEmail(user *User, token string, config *cli.Context) (string, error) {
+	// email string
 	productName := config.String("product_name")
 	domain := config.String("domain")
-	mail := makeEmailMessage(config)
+	mail := MakeEmailMessage(&user.Tenant, config)
 	body := hermes.Body{
-		Name: email,
+		Name: user.Email,
 		Intros: []string{
-			fmt.Sprintf("You have received this email because someone requested to reset the password for email address %s at %s", email, productName),
+			fmt.Sprintf("You have received this email because someone requested to reset the password for email address %s at %s", user.Email, productName),
 		},
 		Actions: []hermes.Action{
 			{

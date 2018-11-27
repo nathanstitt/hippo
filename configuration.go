@@ -9,13 +9,12 @@ import (
 
 var IsDevMode = false
 var SessionsKeyValue = []byte("32-byte-long-auth-key-123-45-712")
+type Configuration *cli.Context
 
 func Initialize() *cli.App {
 	IsDevMode = 0 != strings.Compare(gin.Mode(), "release")
 
 	app := cli.NewApp()
-	app.Name = "spendily"
-	app.Version = "0.0.1"
 	app.Flags = []cli.Flag {
 		altsrc.NewIntFlag(cli.IntFlag{
 			Name:   "port",

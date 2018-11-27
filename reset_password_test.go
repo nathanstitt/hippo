@@ -25,7 +25,8 @@ func prepareResetRequest(db *gorm.DB) *SignupData {
 
 func TestResetPassword(t *testing.T) {
 
-	it("sends reset link", t, func(env *TestEnv) {
+	Test("sends reset link", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
+
 		r := env.Router
 		db := env.DB
 

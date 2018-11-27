@@ -13,7 +13,7 @@ import (
 )
 
 func GetConfig(c *gin.Context) *cli.Context {
-	config, ok := c.MustGet("config").(*cli.Context)
+	config, ok := c.MustGet("config").(Configuration)
 	if ok {
 		return config
 	}

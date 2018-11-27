@@ -1,5 +1,0 @@
-- args:
-    table:
-      name: users
-      schema: public
-  type: untrack_table

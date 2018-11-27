@@ -8,14 +8,14 @@ import (
 
 var _ = Describe("Encryption-Decryption", func() {
 
-	It("can encrypt/decrypt", func() {
+	Test("can encrypt/decrypt", &TestFlags{}, func(env *TestEnv) {
 		domain := "test.com"
 		encrypted, _ := Encrypt(map[string]interface{}{"d": domain})
 		decrypted, _ := DecryptStringProperty(encrypted, "d")
 		Expect(domain).To(Equal(decrypted))
 	})
 
-	It("can encrypt/decrypt users", func() {
+	Test("can encrypt/decrypt users", &TestFlags{}, func(env *TestEnv) {
 		user := User{
 			Name: "My Name", Email:"test@test.com",
 		}

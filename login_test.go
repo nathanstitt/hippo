@@ -2,14 +2,15 @@ package hippo
 
 import (
 	"fmt"
-//	"regexp"
-	"testing"
 	"net/http"
 	"net/url"
 	"strings"
 	"net/http/httptest"
 	"github.com/jinzhu/gorm"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/gin-gonic/gin"
+	"github.com/nathanstitt/webpacking"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 func prepareLoginRequest(db *gorm.DB) url.Values {
@@ -31,9 +32,20 @@ func prepareLoginRequest(db *gorm.DB) url.Values {
 	return form;
 }
 
-func TestLoginHandler(t *testing.T) {
+func addLoginRoute(
+	r *gin.Engine,
+	config Configuration,
+	webpack *webpacking.WebPacking,
+) {
+	r.GET("/login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.html", gin.H{})
+	})
+	r.POST("/login", UserLoginHandler("/"))
+}
 
-	it("can log in", t, func(env *TestEnv) {
+var _ = Describe("Login", func() {
+
+	Test("can log in", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
 		r := env.Router
 		db := env.DB
 
@@ -42,11 +54,13 @@ func TestLoginHandler(t *testing.T) {
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		resp := httptest.NewRecorder()
 		r.ServeHTTP(resp, req)
-		So(resp.Header().Get("Set-Cookie"), ShouldNotBeEmpty)
-		So(resp.Header().Get("Location"), ShouldEqual, "/")
+		Expect(resp.Header().Get("Set-Cookie")).To(Not(BeEmpty()))
+		Expect(resp.Header().Get("Location")).To(Equal("/"))
 	})
 
-	it("it rejects invalid logins", t, func(env *TestEnv) {
+	Test("it rejects invalid logins", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
+
+
 		r := env.Router
 		db := env.DB
 		form := prepareLoginRequest(db);
@@ -55,9 +69,9 @@ func TestLoginHandler(t *testing.T) {
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		resp := httptest.NewRecorder()
 		r.ServeHTTP(resp, req)
-		So(resp.Header().Get("Location"), ShouldBeEmpty)
-		So(resp.Body.String(), ShouldContainSubstring, "tab login active")
-		So(resp.Body.String(), ShouldContainSubstring, "email or password is incorrect")
+
+		Expect(resp.Header().Get("Location")).To(BeEmpty())
+		Expect(resp.Body.String()).To(ContainSubstring("email or password is incorrect"))
 	})
 
-}
+});

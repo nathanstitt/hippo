@@ -6,10 +6,10 @@ import (
 	"github.com/matcornic/hermes"
 )
 
-func signupEmail(email string, config *cli.Context) (string, error) {
+func signupEmail(email string, tenant *Tenant, config *cli.Context) (string, error) {
 	productName := config.String("product_name")
 	domain := config.String("domain")
-	mail := makeEmailMessage(config)
+	mail := MakeEmailMessage(tenant, config)
 	body := hermes.Body{
 		Name: email,
 		Intros: []string{

@@ -23,8 +23,10 @@ type Subscription struct {
 type Tenant struct {
 	ID string `gorm:"type:uuid;primary_key" json:"id"`
 	Users []User `json:"-"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
+	Name string `json:"name"`
+	Email string `json:"email"`
+	LogoURL string `gorm:"column:logo_url" json:"logo_url"`
+	HomepageURL string `gorm:"column:homepage_url" json:"homepage_url"`
 	Identifier string `gorm:"unique_index" json:"identifier"`
 	Subscription Subscription `json:"subscription"`
 	CreatedAt time.Time `json:"created_at"`

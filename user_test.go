@@ -1,17 +1,15 @@
 package hippo
 
 import (
-//	"fmt"
-//	"regexp"
-	"testing"
-//	"strings"
-	//	"net/http/httptest"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/dgrijalva/jwt-go"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestUser(t *testing.T) {
-	it("creates a JWT token", t, func(env *TestEnv) {
+var _ = Describe("User", func() {
+
+	Test("creates a JWT token", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
+
 		data := &SignupData{
 			Name: "Nathan",
 			Email: "foo@test.com",
@@ -27,14 +25,17 @@ func TestUser(t *testing.T) {
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return []byte(env.Config.String("session_secret")), nil
 		})
-		So(err, ShouldBeEmpty)
+		Expect(err).To(BeNil())
 		claims, ok := token.Claims.(jwt.MapClaims);
-		So(ok, ShouldEqual, true)
-		So(token.Valid, ShouldEqual, true)
-		So(claims["name"], ShouldEqual, data.Name)
+		Expect(ok).To(BeTrue())
+		Expect(token.Valid).To(BeTrue())
+		Expect(claims["name"]).To(Equal(data.Name))
 	})
 
-	it("can get/set user role", t, func(env *TestEnv) {
+	Test("can get/set user role", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
+
+		db := env.DB
+
 		data := &SignupData{
 			Name: "Nathan",
 			Email: "foo@test.com",
@@ -42,20 +43,15 @@ func TestUser(t *testing.T) {
 			Tenant: "Acme",
 		}
 
-		tenant, _ := CreateTenant(data, env.DB)
-		So(tenant.Users, ShouldHaveLength, 1)
+		tenant, _ := CreateTenant(data, db)
+		Expect(tenant.Users).To(HaveLen(2))
 		user := &tenant.Users[0]
-		So(user.Tenant.ID, ShouldEqual, tenant.ID)
-		So(user.RoleNames, ShouldHaveLength, 1)
-		So(user.RoleNames, ShouldContain, "admin")
-		roles := user.Roles()
-		So(roles.Admin, ShouldEqual, true)
-		So(roles.Manager, ShouldEqual, false)
-		roles.Manager = true
-		roles.Admin = false
-		env.DB.Save(user)
-		So(tenant.Users, ShouldHaveLength, 1)
-		So(user.RoleNames, ShouldContain, "manager")
+		Expect(user.Tenant.ID).To(Equal(tenant.ID))
+
+		Expect(user.IsAdmin()).To(BeTrue())
+		Expect(user.AllowedRoleNames()).Should(ConsistOf(
+			[]string{"admin", "manager", "user", "guest"},
+		))
 	})
 
-}
+});
