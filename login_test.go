@@ -6,14 +6,13 @@ import (
 	"net/url"
 	"strings"
 	"net/http/httptest"
-	"github.com/jinzhu/gorm"
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func prepareLoginRequest(db *gorm.DB) url.Values {
+func prepareLoginRequest(db DB) url.Values {
 	data := SignupData{
 		Name: "Bob",
 		Email: "test123@test.com",

@@ -4,13 +4,12 @@ import (
 	"os"
 	"fmt"
 	"time"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/go-mail/mail"
 	"github.com/matcornic/hermes"
 )
 
 
-func MakeEmailMessage(tenant *Tenant, config *cli.Context) hermes.Hermes {
+func MakeEmailMessage(tenant *Tenant, config Configuration) hermes.Hermes {
 	return hermes.Hermes{
 		Product: hermes.Product{
 			// Appears in header & footer of e-mails
@@ -33,14 +32,14 @@ func decodeInviteToken(token string) (string, error) {
 
 
 type EmailSenderInterface interface {
-	SendEmail(config *cli.Context, to string, subject string, mailBody string) error
+	SendEmail(config Configuration, to string, subject string, mailBody string) error
 }
 
 // Mail sender
 type LocalhostEmailSender struct {}
 
 func (s *LocalhostEmailSender) SendEmail(
-	config *cli.Context, to string, subject string, mailBody string,
+	config Configuration, to string, subject string, mailBody string,
 ) error {
 	m := mail.NewMessage()
 	m.SetHeader("From", "contact@thescrumgame.com")
@@ -59,7 +58,7 @@ func (s *LocalhostEmailSender) SendEmail(
 
 var EmailSender EmailSenderInterface = &LocalhostEmailSender{}
 
-func deliverResetEmail(user *User, token string, config *cli.Context) error {
+func deliverResetEmail(user *User, token string, config Configuration) error {
 	mailBody, err := passwordResetEmail(user, token, config)
 	if (err != nil) {
 		return err;
@@ -72,7 +71,7 @@ func deliverResetEmail(user *User, token string, config *cli.Context) error {
 	)
 }
 
-func deliverLoginEmail(email string, tenant *Tenant, config *cli.Context) error {
+func deliverLoginEmail(email string, tenant *Tenant, config Configuration) error {
 	mailBody, err := signupEmail(email, tenant, config)
 	if (err != nil) {
 		return err;

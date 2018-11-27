@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"os/exec"
 	"encoding/json"
-	"gopkg.in/urfave/cli.v1"
 )
 
 
-func StartGraphql(c *cli.Context) *exec.Cmd {
+func StartGraphql(c Configuration) *exec.Cmd {
 	jwtSecret, _ := json.Marshal(
 		map[string]string{
 			"type": "HS256",

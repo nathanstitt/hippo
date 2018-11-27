@@ -6,7 +6,6 @@ import (
 	"errors"
 	"strings"
 	"net/http"
-	"github.com/jinzhu/gorm"
 	"github.com/gosimple/slug"
 	"github.com/gin-gonic/gin"
 )
@@ -48,7 +47,7 @@ type ApplicationBootstrapData struct {
 	WebDomain string
 }
 
-func isEmailInUse(email string, db *gorm.DB) bool {
+func isEmailInUse(email string, db DB) bool {
 	lowerEmail := strings.ToLower(email)
 	var count int
 	db.Model(&Tenant{}).Where("email = ?", lowerEmail).Count(&count)
@@ -62,7 +61,7 @@ func isEmailInUse(email string, db *gorm.DB) bool {
 	return false
 }
 
-func CreateTenant(data *SignupData, db *gorm.DB) (*Tenant, error) {
+func CreateTenant(data *SignupData, db DB) (*Tenant, error) {
 	email := strings.ToLower(data.Email)
 	if isEmailInUse(email, db) {
 		return nil, errors.New("email is in use")

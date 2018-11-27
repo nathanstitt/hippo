@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"encoding/json"
 //	"github.com/lib/pq"
-	"github.com/jinzhu/gorm"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 //	"github.com/gin-contrib/sessions/cookie"
@@ -86,13 +85,13 @@ func (u *User) SetPassword(password string) {
 	u.PasswordDigest = string(hashedPassword)
 }
 
-func FindUserByEmail(email string, tx *gorm.DB) *User {
+func FindUserByEmail(email string, tx DB) *User {
 	var user User
 	tx.First(&user, "email = ?", strings.ToLower(email))
 	return &user
 }
 
-func CreateUser(email string, tx *gorm.DB) *User {
+func CreateUser(email string, tx DB) *User {
 	var user = &User{ Name: email, Email: strings.ToLower(email) }
 	tx.Create(&user)
 	return user

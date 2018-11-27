@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"html/template"
 	"net/http/httptest"
-	"github.com/jinzhu/gorm"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/onsi/ginkgo"
 	"github.com/gin-gonic/gin"
@@ -23,14 +22,14 @@ type FakeEmailSender struct {
 	body string
 }
 
-func (f *FakeEmailSender) SendEmail(config *cli.Context, to string, subject string, body string) error {
+func (f *FakeEmailSender) SendEmail(config Configuration, to string, subject string, body string) error {
 	f.to, f.subject, f.body = to, subject, body
 	return nil
 }
 
 var testEmail *FakeEmailSender
 
-func testingContextMiddleware(config *cli.Context, tx *gorm.DB) gin.HandlerFunc {
+func testingContextMiddleware(config Configuration, tx DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("dbTx", tx)
 		c.Set("config", config)
@@ -40,8 +39,8 @@ func testingContextMiddleware(config *cli.Context, tx *gorm.DB) gin.HandlerFunc 
 
 type TestEnv struct {
 	Router *gin.Engine
-	DB *gorm.DB
-	Config *cli.Context
+	DB DB
+	Config Configuration
 	Webpack *webpacking.WebPacking
 	Tenant *Tenant
 }
@@ -91,7 +90,7 @@ type TestSetupEnv struct {
 	DBConnectionUrl string
 }
 
-func TestingCookieForUser(u *User, config *cli.Context) string {
+func TestingCookieForUser(u *User, config Configuration) string {
 	r := gin.Default()
 	InitSessions("test", r, config)
 	r.GET("/", func(c *gin.Context) {
@@ -123,7 +122,9 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		"db_conn_url", TestingEnvironment.DBConnectionUrl, "doc",
 	)
 
-	config := cli.NewContext(nil, set, nil)
+	var config Configuration
+	config = cli.NewContext(nil, set, nil)
+	config.String("foo")
 	db := ConnectDB(config)
 	tx := db.Begin()
 

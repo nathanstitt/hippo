@@ -8,11 +8,10 @@ import (
 	"net/url"
 	"strings"
 	"net/http/httptest"
-	"github.com/jinzhu/gorm"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func prepareResetRequest(db *gorm.DB) *SignupData {
+func prepareResetRequest(db DB) *SignupData {
 	data := SignupData{
 		Name: "Bob",
 		Email: "test-invite-123@test.com",

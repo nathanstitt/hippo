@@ -2,11 +2,10 @@ package hippo
 
 import (
 	"fmt"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/matcornic/hermes"
 )
 
-func passwordResetEmail(user *User, token string, config *cli.Context) (string, error) {
+func passwordResetEmail(user *User, token string, config Configuration) (string, error) {
 	// email string
 	productName := config.String("product_name")
 	domain := config.String("domain")

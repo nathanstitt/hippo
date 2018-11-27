@@ -2,11 +2,10 @@ package hippo
 
 import (
 	"fmt"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/matcornic/hermes"
 )
 
-func signupEmail(email string, tenant *Tenant, config *cli.Context) (string, error) {
+func signupEmail(email string, tenant *Tenant, config Configuration) (string, error) {
 	productName := config.String("product_name")
 	domain := config.String("domain")
 	mail := MakeEmailMessage(tenant, config)

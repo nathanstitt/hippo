@@ -3,14 +3,13 @@ package hippo
 import (
 //	"fmt"
 	"html/template"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 )
 
-func InitWebpack(router *gin.Engine, config *cli.Context) *webpacking.WebPacking {
+func InitWebpack(router *gin.Engine, config Configuration) *webpacking.WebPacking {
 	wpConfig := &webpacking.Config{
 		IsDev: IsDevMode,
 	}
@@ -25,7 +24,7 @@ func InitWebpack(router *gin.Engine, config *cli.Context) *webpacking.WebPacking
 	return packager
 }
 
-func InitSessions(cookie_name string, r *gin.Engine, config *cli.Context) {
+func InitSessions(cookie_name string, r *gin.Engine, config Configuration) {
 	secret := []byte(config.String("session_secret"))
 	SessionsKeyValue = secret
 	store := cookie.NewStore(secret)
@@ -36,7 +35,7 @@ func CreateRouter() *gin.Engine {
 	return gin.New()
 }
 
-func AddGraphqlProxyRoutes(r *gin.Engine, config *cli.Context) {
+func AddGraphqlProxyRoutes(r *gin.Engine, config Configuration) {
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 
 	graphql_port := config.Int("graphql_port")

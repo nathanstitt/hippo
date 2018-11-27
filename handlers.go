@@ -7,12 +7,10 @@ import (
 	"html/template"
 	"encoding/json"
 	"net/http/httputil"
-	"github.com/jinzhu/gorm"
-	"gopkg.in/urfave/cli.v1"
 	"github.com/gin-gonic/gin"
 )
 
-func GetConfig(c *gin.Context) *cli.Context {
+func GetConfig(c *gin.Context) Configuration {
 	config, ok := c.MustGet("config").(Configuration)
 	if ok {
 		return config
@@ -20,15 +18,15 @@ func GetConfig(c *gin.Context) *cli.Context {
 	panic("config isn't the correct type")
 }
 
-func GetDB(c *gin.Context) *gorm.DB {
-	tx, ok := c.MustGet("dbTx").(*gorm.DB)
+func GetDB(c *gin.Context) DB {
+	tx, ok := c.MustGet("dbTx").(DB)
 	if ok {
 		return tx
 	}
 	panic("config isn't the correct type")
 }
 
-func RoutingMiddleware(config *cli.Context, db *gorm.DB) gin.HandlerFunc {
+func RoutingMiddleware(config Configuration, db DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tx := db.Begin()
 		c.Set("dbTx", tx)
@@ -93,7 +91,7 @@ func RenderApplication(user *User, c *gin.Context) {
 	})
 }
 
-func BootstrapData(user *User, cfg *cli.Context) template.JS {
+func BootstrapData(user *User, cfg Configuration) template.JS {
 	type BootstrapDataT map[string]interface{}
 	bootstrapData, err := json.Marshal(
 		BootstrapDataT{

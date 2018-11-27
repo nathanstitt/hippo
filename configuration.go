@@ -7,9 +7,14 @@ import (
 	"github.com/urfave/cli/altsrc"
 )
 
+type Configuration interface {
+	String(string) string
+	Bool(name string) bool
+	Int(name string) int
+}
+
 var IsDevMode = false
 var SessionsKeyValue = []byte("32-byte-long-auth-key-123-45-712")
-type Configuration *cli.Context
 
 func Initialize() *cli.App {
 	IsDevMode = 0 != strings.Compare(gin.Mode(), "release")
