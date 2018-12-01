@@ -3,15 +3,15 @@ package hippo;
 import (
 	"os"
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"database/sql"
 )
 
-type DB = *gorm.DB
+type DB = *sql.Tx
 
-func ConnectDB(c Configuration) DB {
+func ConnectDB(c Configuration) *sql.DB {
 	conn := c.String("db_conn_url")
-	db, err := gorm.Open("postgres", conn)
+	db, err := sql.Open("postgres", conn)
+
 	if err != nil {
 		fmt.Printf("error connecting using: %s: %s\n", conn, err)
 		os.Exit(1)

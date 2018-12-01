@@ -5,10 +5,10 @@ import (
 //	"strings"
 )
 
-type Role struct {
-	ID uint `gorm:"primary_key"`
-	Name string
-}
+// type Role struct {
+//	ID uint `gorm:"primary_key"`
+//	Name string
+// }
 
 const GuestRoleID	= 1
 const UserRoleID	= 2

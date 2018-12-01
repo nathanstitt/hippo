@@ -5,11 +5,11 @@ import (
 	"github.com/matcornic/hermes"
 )
 
-func passwordResetEmail(user *User, token string, config Configuration) (string, error) {
+func passwordResetEmail(user *User, token string, db DB, config Configuration) (string, error) {
 	// email string
 	productName := config.String("product_name")
 	domain := config.String("domain")
-	mail := MakeEmailMessage(&user.Tenant, config)
+	mail := MakeEmailMessage(user.Tenant().OneP(db), config)
 	body := hermes.Body{
 		Name: user.Email,
 		Intros: []string{

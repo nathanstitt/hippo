@@ -44,7 +44,7 @@ func TestSignupHandler(t *testing.T) {
 		user := FindUserByEmail(email, db)
 		So(user.ID, ShouldNotEqual, 0)
 		So(resp.Code, ShouldEqual, http.StatusOK)
-		if db.NewRecord(user) {
+		if user.ID == "" {
 			fmt.Printf("BODY: %s", resp.Body.String())
 		}
 		So(resp.Header().Get("Set-Cookie"), ShouldNotBeEmpty)

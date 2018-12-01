@@ -14,7 +14,7 @@ func (u *User) JWT(config Configuration) string {
 			"x-hasura-default-role": u.RoleName(),
 			"x-hasura-allowed-roles": u.AllowedRoleNames(),
 			"x-hasura-user-id": u.ID,
-			"x-hasura-org-id": u.Tenant.ID,
+			"x-hasura-org-id": u.TenantID,
 		},
 	})
 

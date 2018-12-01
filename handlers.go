@@ -4,6 +4,7 @@ import (
 	"log"
 	"fmt"
 	"net/http"
+	"database/sql"
 	"html/template"
 	"encoding/json"
 	"net/http/httputil"
@@ -26,9 +27,12 @@ func GetDB(c *gin.Context) DB {
 	panic("config isn't the correct type")
 }
 
-func RoutingMiddleware(config Configuration, db DB) gin.HandlerFunc {
+func RoutingMiddleware(config Configuration, db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tx := db.Begin()
+		tx, err := db.Begin()
+		if err != nil {
+			panic(err)
+		}
 		c.Set("dbTx", tx)
 		c.Set("config", config)
 		defer func() {

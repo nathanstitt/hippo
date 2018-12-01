@@ -14,8 +14,8 @@ func MakeEmailMessage(tenant *Tenant, config Configuration) hermes.Hermes {
 		Product: hermes.Product{
 			// Appears in header & footer of e-mails
 			Name: tenant.Name,
-			Link: tenant.HomepageURL,
-			Logo: tenant.LogoURL,
+			Link: tenant.HomepageURL.String,
+			Logo: tenant.LogoURL.String,
 			Copyright: fmt.Sprintf(
 				"Copyright © %d %s. All rights reserved.",
 				time.Now().Year(),
@@ -58,8 +58,8 @@ func (s *LocalhostEmailSender) SendEmail(
 
 var EmailSender EmailSenderInterface = &LocalhostEmailSender{}
 
-func deliverResetEmail(user *User, token string, config Configuration) error {
-	mailBody, err := passwordResetEmail(user, token, config)
+func deliverResetEmail(user *User, token string, db DB, config Configuration) error {
+	mailBody, err := passwordResetEmail(user, token, db, config)
 	if (err != nil) {
 		return err;
 	}

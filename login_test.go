@@ -2,14 +2,14 @@ package hippo
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
+	"net/http"
 	"net/http/httptest"
 	"github.com/gin-gonic/gin"
-	"github.com/nathanstitt/webpacking"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/nathanstitt/webpacking"
 )
 
 func prepareLoginRequest(db DB) url.Values {

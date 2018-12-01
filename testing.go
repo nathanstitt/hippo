@@ -2,10 +2,10 @@ package hippo
 
 import (
 	"io"
-
 //	"fmt"
 	"flag"
 	"bytes"
+	"context"
 	"net/http"
 	"io/ioutil"
 	"html/template"
@@ -14,6 +14,8 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
+//	"github.com/volatiletech/sqlboiler/boil"
+//	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 type FakeEmailSender struct {
@@ -110,6 +112,8 @@ var TestingEnvironment = &TestSetupEnv{
 
 
 func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
+//	boil.DebugMode = true
+
 	testEmail = &FakeEmailSender{}
 	EmailSender = testEmail;
 	gin.SetMode(gin.ReleaseMode)
@@ -126,7 +130,9 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 	config = cli.NewContext(nil, set, nil)
 	config.String("foo")
 	db := ConnectDB(config)
-	tx := db.Begin()
+
+	ctx := context.Background()
+	tx, _ := db.BeginTx(ctx, nil)
 
 	var router *gin.Engine
 	var webpack *webpacking.WebPacking
@@ -142,7 +148,6 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 
 	if flags.WithRoutes != nil {
 		router = gin.New()
-
 
 		router.Use(testingContextMiddleware(config, tx))
 		InitSessions("test", router, config)

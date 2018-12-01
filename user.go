@@ -3,7 +3,7 @@ package hippo
 import (
 	"fmt"
 	"log"
-	"time"
+//	"time"
 	"strings"
 	"net/http"
 	"encoding/json"
@@ -12,20 +12,22 @@ import (
 	"golang.org/x/crypto/bcrypt"
 //	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions"
+	"github.com/volatiletech/sqlboiler/boil"
+	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-type User struct {
-	ID string `gorm:"type:uuid;primary_key" json:"id"`
-	Tenant Tenant `json:"-"`
-	TenantID string `json:"-"`
-	RoleID  int
-	Role Role
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	PasswordDigest string `json:"-"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
+// type User struct {
+//	ID string `gorm:"type:uuid;primary_key" json:"id"`
+//	Tenant Tenant `json:"-"`
+//	TenantID string `json:"-"`
+//	RoleID  int
+//	Role Role
+//	Name   string `json:"name"`
+//	Email  string `json:"email"`
+//	PasswordDigest string `json:"-"`
+//	CreatedAt time.Time `json:"created_at"`
+//	UpdatedAt time.Time `json:"updated_at"`
+// }
 
 
 func(u *User) IsGuest() bool {
@@ -86,14 +88,18 @@ func (u *User) SetPassword(password string) {
 }
 
 func FindUserByEmail(email string, tx DB) *User {
-	var user User
-	tx.First(&user, "email = ?", strings.ToLower(email))
-	return &user
+	user, err := Users(
+		Where("email = ?", strings.ToLower(email)),
+	).One(tx)
+	if err != nil {
+		return user
+	}
+	return user
 }
 
 func CreateUser(email string, tx DB) *User {
 	var user = &User{ Name: email, Email: strings.ToLower(email) }
-	tx.Create(&user)
+	user.InsertP(tx, boil.Infer())
 	return user
 }
 
@@ -134,11 +140,8 @@ func userForInviteToken(token string, c *gin.Context) (*User, error) {
 	}
 	db := GetDB(c)
 	user := FindUserByEmail(email, db)
-	if db.NewRecord(user) {
+	if user == nil {
 		user = CreateUser(email, db)
-		if db.NewRecord(user) {
-			return nil, db.Error
-		}
 	}
 	LoginUser(user, c)
 	return user, nil
@@ -169,7 +172,7 @@ func UserPasswordResetHandler() func (c *gin.Context) {
 			user := UserFromSession(c)
 			if user != nil {
 				user.SetPassword(password)
-				db.Save(user)
+				user.UpdateP(db, boil.Infer())
 				c.Redirect(http.StatusFound, "/")
 				return
 			}
@@ -178,8 +181,8 @@ func UserPasswordResetHandler() func (c *gin.Context) {
 		token, _ := EncryptStringProperty("email", email)
 
 		user := FindUserByEmail(email, db)
-		if !db.NewRecord(user) {
-			err := deliverResetEmail(user, token, GetConfig(c))
+		if user != nil {
+			err := deliverResetEmail(user, token, db, GetConfig(c))
 			if err != nil {
 				RenderErrorPage("Failed to deliver email, please retry", c, &err)
 				return
@@ -208,13 +211,13 @@ func UserLoginHandler(successUrl string) func(c *gin.Context) {
 		db := GetDB(c)
 
 		email := strings.ToLower(form.Email)
-		user := &User{}
 
-		notFound := db.Joins(
-			"join tenants on tenants.id = users.tenant_id and tenants.identifier=?", form.Tenant,
-		).Where(&User{Email: email}).First(&user).RecordNotFound()
+		user := Users(
+			InnerJoin("tenants on tenants.id = users.tenant_id and tenants.identifier=?", form.Tenant),
+			Where("users.email = ?", email),
+		).OneP(db)
 
-		if notFound {
+		if user.ID == "" {
 			c.HTML(http.StatusOK, "login.html", gin.H{
 				"signin": form,
 				"error": "email or password is incorrect",
@@ -231,8 +234,6 @@ func UserLoginHandler(successUrl string) func(c *gin.Context) {
 		}
 		LoginUser(user, c)
 		c.Redirect(http.StatusSeeOther, successUrl)
-
-//		RenderApplication(user, c)
 	}
 }
 

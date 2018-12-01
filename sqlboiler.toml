@@ -1,0 +1,11 @@
+add-panic-variants = "true"
+no-context = "true"
+pkgname = "hippo"
+output = "."
+
+[psql]
+  dbname = "hippo_dev"
+  host   = "localhost"
+  port   = 5432
+  user   = "nas"
+  sslmode = "disable"

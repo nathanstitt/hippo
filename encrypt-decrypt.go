@@ -6,7 +6,6 @@ import (
 	"strings"
 	"net/http"
 	"github.com/dgrijalva/jwt-go"
-
 )
 
 type UserClaims struct {
