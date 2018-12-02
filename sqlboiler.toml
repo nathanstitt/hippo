@@ -1,7 +1,7 @@
 add-panic-variants = "true"
 no-context = "true"
-pkgname = "hippo"
-output = "."
+pkgname = "hm"
+output = "models"
 
 [psql]
   dbname = "hippo_dev"

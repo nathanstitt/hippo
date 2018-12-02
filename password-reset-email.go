@@ -3,9 +3,10 @@ package hippo
 import (
 	"fmt"
 	"github.com/matcornic/hermes"
+	"github.com/nathanstitt/hippo/models"
 )
 
-func passwordResetEmail(user *User, token string, db DB, config Configuration) (string, error) {
+func passwordResetEmail(user *hm.User, token string, db DB, config Configuration) (string, error) {
 	// email string
 	productName := config.String("product_name")
 	domain := config.String("domain")

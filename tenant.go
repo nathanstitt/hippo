@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/gosimple/slug"
 	"github.com/gin-gonic/gin"
+	"github.com/nathanstitt/hippo/models"
 	"github.com/volatiletech/sqlboiler/boil"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
@@ -43,50 +44,51 @@ type SignupData struct {
 
 
 type ApplicationBootstrapData struct {
-	User *User
+	User *hm.User
 	JWT string
 	WebDomain string
 }
 
 func isEmailInUse(email string, db DB) bool {
 	lowerEmail := strings.ToLower(email)
-	if (Tenants(Where("email = ?", lowerEmail)).ExistsP(db) ||
-		Users(Where("email = ?", lowerEmail)).ExistsP(db)) {
+	m := Where("email = ?", lowerEmail)
+	if (hm.Tenants(m).ExistsP(db) ||
+		hm.Users(m).ExistsP(db)) {
 		return true
 	}
 	return false
 }
 
-func CreateTenant(data *SignupData, db DB) (*Tenant, error) {
+func CreateTenant(data *SignupData, db DB) (*hm.Tenant, error) {
 	email := strings.ToLower(data.Email)
 	if isEmailInUse(email, db) {
 		return nil, errors.New("email is in use")
 	}
-	tenant := Tenant{
+	tenant := hm.Tenant{
 		Name: data.Tenant,
 		Email: email,
 		Identifier: slug.Make(data.Tenant),
 	}
 	var err error
-	var admin *User
+	var admin *hm.User
 
 	if err = tenant.Insert(db, boil.Infer()); err != nil {
 		return nil, err;
 	}
 
-	admin = &User{
+	admin = &hm.User{
 		Name: data.Name,
 		Email: data.Email,
-		RoleID: AdminRoleID,
+		RoleID: UserAdminRoleID,
 	}
-	admin.SetPassword(data.Password)
+	SetUserPassword(admin, data.Password)
 	if err = tenant.AddUsers(db, true, admin); err != nil {
 		return nil, err;
 	}
 
-	err = tenant.AddUsers(db, true, &User{
+	err = tenant.AddUsers(db, true, &hm.User{
 		Name: "Anonymous",
-		RoleID: GuestRoleID,
+		RoleID: UserGuestRoleID,
 	});
 	if err != nil {
 		return nil, err

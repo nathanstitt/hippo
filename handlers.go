@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"net/http/httputil"
 	"github.com/gin-gonic/gin"
+	"github.com/nathanstitt/hippo/models"
 )
 
 func GetConfig(c *gin.Context) Configuration {
@@ -87,7 +88,7 @@ func RenderHomepage(signup *SignupData, err *error, c *gin.Context) {
 	})
 }
 
-func RenderApplication(user *User, c *gin.Context) {
+func RenderApplication(user *hm.User, c *gin.Context) {
 	cfg := GetConfig(c)
 	c.HTML(http.StatusOK, "application.html", gin.H{
 		"webDomain": cfg.String("web_domain"),
@@ -95,13 +96,13 @@ func RenderApplication(user *User, c *gin.Context) {
 	})
 }
 
-func BootstrapData(user *User, cfg Configuration) template.JS {
+func BootstrapData(user *hm.User, cfg Configuration) template.JS {
 	type BootstrapDataT map[string]interface{}
 	bootstrapData, err := json.Marshal(
 		BootstrapDataT{
 			"user": user,
 			"graphql" : BootstrapDataT{
-				"token": user.JWT(cfg),
+				"token": JWTForUser(user, cfg),
 				"endpoint": cfg.String("web_domain"),
 			},
 		})

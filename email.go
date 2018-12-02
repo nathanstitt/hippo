@@ -6,10 +6,11 @@ import (
 	"time"
 	"github.com/go-mail/mail"
 	"github.com/matcornic/hermes"
+	"github.com/nathanstitt/hippo/models"
 )
 
 
-func MakeEmailMessage(tenant *Tenant, config Configuration) hermes.Hermes {
+func MakeEmailMessage(tenant *hm.Tenant, config Configuration) hermes.Hermes {
 	return hermes.Hermes{
 		Product: hermes.Product{
 			// Appears in header & footer of e-mails
@@ -58,7 +59,7 @@ func (s *LocalhostEmailSender) SendEmail(
 
 var EmailSender EmailSenderInterface = &LocalhostEmailSender{}
 
-func deliverResetEmail(user *User, token string, db DB, config Configuration) error {
+func deliverResetEmail(user *hm.User, token string, db DB, config Configuration) error {
 	mailBody, err := passwordResetEmail(user, token, db, config)
 	if (err != nil) {
 		return err;
@@ -71,7 +72,7 @@ func deliverResetEmail(user *User, token string, db DB, config Configuration) er
 	)
 }
 
-func deliverLoginEmail(email string, tenant *Tenant, config Configuration) error {
+func deliverLoginEmail(email string, tenant *hm.Tenant, config Configuration) error {
 	mailBody, err := signupEmail(email, tenant, config)
 	if (err != nil) {
 		return err;

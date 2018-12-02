@@ -5,6 +5,7 @@ require (
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/sprig v2.16.0+incompatible // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
+	github.com/bmizerany/pq v0.0.0-20131128184720-da2b95e392c1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ericlagergren/decimal v0.0.0-20180907214518-0bb163153a5d // indirect
 	github.com/gin-contrib/sessions v0.0.0-20181124110724-7687b645ca6b

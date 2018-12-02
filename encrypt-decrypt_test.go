@@ -4,6 +4,7 @@ import (
 	_ "fmt" // for adhoc printing
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/nathanstitt/hippo/models"
 )
 
 var _ = Describe("Encryption-Decryption", func() {
@@ -16,7 +17,7 @@ var _ = Describe("Encryption-Decryption", func() {
 	})
 
 	Test("can encrypt/decrypt users", &TestFlags{}, func(env *TestEnv) {
-		user := User{
+		user := hm.User{
 			Name: "My Name", Email:"test@test.com",
 		}
 		encrypted, _ := JWTforUser(&user)

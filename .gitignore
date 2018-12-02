@@ -1,4 +1,3 @@
 .DS_Store
 public/webpack
-spendily
-node_modules
+sqlboiler.toml

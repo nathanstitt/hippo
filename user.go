@@ -14,6 +14,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/volatiletech/sqlboiler/boil"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/nathanstitt/hippo/models"
 )
 
 // type User struct {
@@ -30,56 +31,12 @@ import (
 // }
 
 
-func(u *User) IsGuest() bool {
-	return u.RoleID == AdminRoleID
-}
-func(u *User) IsUser() bool {
-	return u.RoleID == UserRoleID
-}
-func(u *User) IsManager() bool {
-	return u.RoleID == ManagerRoleID
-}
-func(u *User) IsAdmin() bool {
-	return u.RoleID == AdminRoleID
-}
-
-func (u *User) RoleName() string {
-	switch u.RoleID {
-	case AdminRoleID:
-		return "admin"
-	case ManagerRoleID:
-		return "manager"
-	case UserRoleID:
-		return "user"
-	default:
-		return "guest"
-	}
-}
-
-
-func (u *User) AllowedRoleNames() []string {
-	switch u.RoleID {
-	case AdminRoleID:
-		return []string{"admin", "manager", "user", "guest"}
-	case ManagerRoleID:
-		return []string{"manager", "user", "guest"}
-	case UserRoleID:
-		return []string{"user", "guest"}
-	default:
-		return []string{"guest"}
-	}
-}
-
-func (u *User) String() string {
-    return fmt.Sprintf("User<%s %s %v>", u.ID, u.Name, u.Email)
-}
-
-func (u *User) ValidatePassword(password string) bool {
+func IsValidPassword(u *hm.User, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordDigest), []byte(password))
 	return err == nil;
 }
 
-func (u *User) SetPassword(password string) {
+func SetUserPassword(u *hm.User, password string) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		panic(err)
@@ -87,8 +44,8 @@ func (u *User) SetPassword(password string) {
 	u.PasswordDigest = string(hashedPassword)
 }
 
-func FindUserByEmail(email string, tx DB) *User {
-	user, err := Users(
+func FindUserByEmail(email string, tx DB) *hm.User {
+	user, err := hm.Users(
 		Where("email = ?", strings.ToLower(email)),
 	).One(tx)
 	if err != nil {
@@ -97,14 +54,14 @@ func FindUserByEmail(email string, tx DB) *User {
 	return user
 }
 
-func CreateUser(email string, tx DB) *User {
-	var user = &User{ Name: email, Email: strings.ToLower(email) }
+func CreateUser(email string, tx DB) *hm.User {
+	var user = &hm.User{ Name: email, Email: strings.ToLower(email) }
 	user.InsertP(tx, boil.Infer())
 	return user
 }
 
 
-func SaveUserToSession(user *User, session sessions.Session) {
+func SaveUserToSession(user *hm.User, session sessions.Session) {
 	out, err := json.Marshal(user)
 	if  err != nil {
 		panic("failed to encode user")
@@ -113,18 +70,18 @@ func SaveUserToSession(user *User, session sessions.Session) {
 	session.Save()
 }
 
-func LoginUser(user *User, c *gin.Context) {
+func LoginUser(user *hm.User, c *gin.Context) {
 	session := sessions.Default(c)
 	SaveUserToSession(user, session)
 }
 
-func UserFromSession(c *gin.Context) *User {
+func UserFromSession(c *gin.Context) *hm.User {
 	session := sessions.Default(c)
 	val := session.Get("u")
 	if val == nil {
 		return nil
 	}
-	var user *User
+	var user *hm.User
 	err := json.Unmarshal(val.([]byte), &user)
 	if err != nil {
 		return nil
@@ -132,7 +89,7 @@ func UserFromSession(c *gin.Context) *User {
 	return user
 }
 
-func userForInviteToken(token string, c *gin.Context) (*User, error) {
+func userForInviteToken(token string, c *gin.Context) (*hm.User, error) {
 	email, err := decodeInviteToken(token)
 	if (err != nil) {
 		log.Printf("Failed to decode token %s: %s", token, err.Error())
@@ -171,7 +128,7 @@ func UserPasswordResetHandler() func (c *gin.Context) {
 		if password != "" {
 			user := UserFromSession(c)
 			if user != nil {
-				user.SetPassword(password)
+				SetUserPassword(user, password)
 				user.UpdateP(db, boil.Infer())
 				c.Redirect(http.StatusFound, "/")
 				return
@@ -212,7 +169,7 @@ func UserLoginHandler(successUrl string) func(c *gin.Context) {
 
 		email := strings.ToLower(form.Email)
 
-		user := Users(
+		user := hm.Users(
 			InnerJoin("tenants on tenants.id = users.tenant_id and tenants.identifier=?", form.Tenant),
 			Where("users.email = ?", email),
 		).OneP(db)
@@ -225,7 +182,7 @@ func UserLoginHandler(successUrl string) func(c *gin.Context) {
 			return
 		}
 
-		if !user.ValidatePassword(form.Password) {
+		if !IsValidPassword(user, form.Password) {
 			c.HTML(http.StatusOK, "login.html", gin.H{
 				"signin": form,
 				"error": "email or password is incorrect",

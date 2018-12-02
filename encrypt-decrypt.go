@@ -6,14 +6,15 @@ import (
 	"strings"
 	"net/http"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/nathanstitt/hippo/models"
 )
 
 type UserClaims struct {
-	User
+	hm.User
 	jwt.StandardClaims
 }
 
-func JWTforUser(user *User) (string, error) {
+func JWTforUser(user *hm.User) (string, error) {
 
 	claims := UserClaims{
 		*user,
@@ -24,7 +25,7 @@ func JWTforUser(user *User) (string, error) {
 	return tokenString, err
 }
 
-func UserforJWT(tokenString string) (*User, error) {
+func UserforJWT(tokenString string) (*hm.User, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -45,7 +46,7 @@ func Encrypt(contents jwt.MapClaims) (string, error) {
 	return tokenString, err
 }
 
-func userFromRequest(r *http.Request) (*User, error) {
+func userFromRequest(r *http.Request) (*hm.User, error) {
 	reqToken := r.Header.Get("Authorization")
 	parts := strings.Split(reqToken, "Bearer ")
 	if len(parts) != 2 {

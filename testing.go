@@ -2,18 +2,20 @@ package hippo
 
 import (
 	"io"
-//	"fmt"
+	"fmt"
 	"flag"
 	"bytes"
 	"context"
 	"net/http"
 	"io/ioutil"
+	"database/sql"
 	"html/template"
 	"net/http/httptest"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/onsi/ginkgo"
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
+	"github.com/nathanstitt/hippo/models"
 //	"github.com/volatiletech/sqlboiler/boil"
 //	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
@@ -44,13 +46,13 @@ type TestEnv struct {
 	DB DB
 	Config Configuration
 	Webpack *webpacking.WebPacking
-	Tenant *Tenant
+	Tenant *hm.Tenant
 }
 
 type RequestOptions struct {
 	Body *string
 	SessionCookie string
-	User *User
+	User *hm.User
 }
 
 func (env *TestEnv) MakeRequest(
@@ -92,7 +94,7 @@ type TestSetupEnv struct {
 	DBConnectionUrl string
 }
 
-func TestingCookieForUser(u *User, config Configuration) string {
+func TestingCookieForUser(u *hm.User, config Configuration) string {
 	r := gin.Default()
 	InitSessions("test", r, config)
 	r.GET("/", func(c *gin.Context) {
@@ -110,6 +112,7 @@ var TestingEnvironment = &TestSetupEnv{
 	DBConnectionUrl: "postgres://nas@localhost",
 }
 
+var testingDBConn *sql.DB = nil;
 
 func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 //	boil.DebugMode = true
@@ -128,11 +131,13 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 
 	var config Configuration
 	config = cli.NewContext(nil, set, nil)
-	config.String("foo")
-	db := ConnectDB(config)
+
+	if testingDBConn == nil || testingDBConn.Ping() != nil {
+		testingDBConn = ConnectDB(config)
+	}
 
 	ctx := context.Background()
-	tx, _ := db.BeginTx(ctx, nil)
+	tx, _ := testingDBConn.BeginTx(ctx, nil)
 
 	var router *gin.Engine
 	var webpack *webpacking.WebPacking
@@ -140,7 +145,7 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 	tenant, _ := CreateTenant(
 		&SignupData{
 			Name: "Tester Testing",
-			Email: "test@test.com",
+			Email: fmt.Sprintf("test@test.com"),
 			Password: "password",
 			Tenant: "testing",
 		}, tx,

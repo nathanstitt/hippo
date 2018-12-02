@@ -11,7 +11,7 @@ var _ = Describe("User", func() {
 
 	Test("creates a JWT token", &TestFlags{WithRoutes: addLoginRoute}, func(env *TestEnv) {
 		user := env.Tenant.R.Users[0]
-		tokenString := user.JWT(env.Config)
+		tokenString := JWTForUser(user, env.Config)
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return []byte(env.Config.String("session_secret")), nil
 		})
@@ -28,9 +28,9 @@ var _ = Describe("User", func() {
 		user := tenant.R.Users[0]
 		Expect(user.TenantID).To(Equal(tenant.ID))
 
-		Expect(user.IsAdmin()).To(BeTrue())
-		Expect(user.AllowedRoleNames()).Should(ConsistOf(
-			[]string{"admin", "manager", "user", "guest"},
+		Expect(UserIsAdmin(user)).To(BeTrue())
+		Expect(UserAllowedRoleNames(user)).Should(ConsistOf(
+			[]string{"admin", "manager", "member", "guest"},
 		))
 	})
 

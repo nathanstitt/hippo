@@ -7,6 +7,8 @@ github.com/Masterminds/sprig v2.16.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuN
 github.com/aokoli/goutils v1.0.1 h1:7fpzNGoJ3VA8qcrm++XEE1QUe0mIwNeLa02Nwq7RDkg=
 github.com/aokoli/goutils v1.0.1/go.mod h1:SijmP0QR8LtwsmDs8Yii5Z/S4trXFGFC2oO5g9DP+DQ=
 github.com/apmckinlay/gsuneido v0.0.0-20180907175622-1f10244968e3/go.mod h1:hJnaqxrCRgMCTWtpNz9XUFkBCREiQdlcyK6YNmOfroM=
+github.com/bmizerany/pq v0.0.0-20131128184720-da2b95e392c1 h1:1clOQIolnXGoH1SUo8ZPgdfOWFp/6i8NuRerrVL/TAc=
+github.com/bmizerany/pq v0.0.0-20131128184720-da2b95e392c1/go.mod h1:YR6v6TjYGQnPky7rSf5U+AiQ4+EHIVmFYbhHUPo5L2U=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

@@ -68,7 +68,7 @@ func TestResetPassword(t *testing.T) {
 		So(resp.Header().Get("Location"), ShouldEqual, "/")
 
 		user := FindUserByEmail(data.Email, db)
-		So(user.ValidatePassword("test-123-reset"), ShouldEqual, true)
+		So(IsValidPassword(user, "test-123-reset"), ShouldEqual, true)
 	})
 
 

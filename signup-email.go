@@ -3,9 +3,10 @@ package hippo
 import (
 	"fmt"
 	"github.com/matcornic/hermes"
+	"github.com/nathanstitt/hippo/models"
 )
 
-func signupEmail(email string, tenant *Tenant, config Configuration) (string, error) {
+func signupEmail(email string, tenant *hm.Tenant, config Configuration) (string, error) {
 	productName := config.String("product_name")
 	domain := config.String("domain")
 	mail := MakeEmailMessage(tenant, config)

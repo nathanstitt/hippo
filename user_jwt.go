@@ -2,17 +2,18 @@ package hippo
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/nathanstitt/hippo/models"
 )
 
-func (u *User) JWT(config Configuration) string {
+func JWTForUser(u *hm.User, config Configuration) string {
 	// Create a new token object, specifying signing method
 	// and the claims you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"name": u.Name,
-		"admin": u.IsAdmin(),
+		"admin": UserIsAdmin(u),
 		"graphql_claims": jwt.MapClaims{
-			"x-hasura-default-role": u.RoleName(),
-			"x-hasura-allowed-roles": u.AllowedRoleNames(),
+			"x-hasura-default-role": UserRoleName(u),
+			"x-hasura-allowed-roles": UserAllowedRoleNames(u),
 			"x-hasura-user-id": u.ID,
 			"x-hasura-org-id": u.TenantID,
 		},
