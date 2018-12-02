@@ -1,22 +1,20 @@
 package hippo
 
 import (
-//	"reflect"
+	"fmt"
 //	"strings"
 	"github.com/nathanstitt/hippo/models"
+	"github.com/volatiletech/sqlboiler/boil"
+	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-// type Role struct {
-//	ID uint `gorm:"primary_key"`
-//	Name string
-// }
+
 const (
 	UserGuestRoleID		= 1
 	UserMemberRoleID	= 2
 	UserManagerRoleID	= 3
 	UserAdminRoleID		= 4
 )
-
 
 func UserIsGuest(u *hm.User) bool {
 	return u.RoleID == UserAdminRoleID
@@ -60,4 +58,16 @@ func UserAllowedRoleNames(u *hm.User) []string {
 	default:
 		return []string{}
 	}
+}
+
+// Define hook to prevent deleing last admin or guest account
+func ensureAdminAndGuest(exec boil.Executor, u *hm.User) error {
+
+	count := hm.Users(Where("tenant_id = ? and role_id = ?",
+		u.TenantID, u.RoleID)).CountP(exec)
+
+	if ((UserIsAdmin(u) || UserIsGuest(u)) && (count < 2)) {
+		return fmt.Errorf("all accounts must have at least 1 user with role %s present", UserRoleName(u));
+	}
+	return nil
 }

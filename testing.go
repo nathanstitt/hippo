@@ -16,7 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
 	"github.com/nathanstitt/hippo/models"
-//	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/boil"
 //	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
@@ -82,6 +82,7 @@ func (env *TestEnv) MakeRequest(
 }
 
 type TestFlags struct {
+	DebugDB bool
 	WithRoutes func(
 		*gin.Engine,
 		Configuration,
@@ -115,7 +116,7 @@ var TestingEnvironment = &TestSetupEnv{
 var testingDBConn *sql.DB = nil;
 
 func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
-//	boil.DebugMode = true
+	boil.DebugMode = flags != nil && flags.DebugDB
 
 	testEmail = &FakeEmailSender{}
 	EmailSender = testEmail;
@@ -136,13 +137,14 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		testingDBConn = ConnectDB(config)
 	}
 
+
 	ctx := context.Background()
 	tx, _ := testingDBConn.BeginTx(ctx, nil)
 
 	var router *gin.Engine
 	var webpack *webpacking.WebPacking
 
-	tenant, _ := CreateTenant(
+	tenant, err := CreateTenant(
 		&SignupData{
 			Name: "Tester Testing",
 			Email: fmt.Sprintf("test@test.com"),
@@ -150,8 +152,12 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 			Tenant: "testing",
 		}, tx,
 	)
+	if err != nil {
+		panic(err)
+	}
 
-	if flags.WithRoutes != nil {
+
+	if flags != nil && flags.WithRoutes != nil {
 		router = gin.New()
 
 		router.Use(testingContextMiddleware(config, tx))

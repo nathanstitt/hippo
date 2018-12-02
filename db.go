@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"github.com/nathanstitt/hippo/models"
+	"github.com/volatiletech/sqlboiler/boil"
 )
 
 type DB = *sql.Tx
@@ -30,5 +31,8 @@ func ConnectDB(c Configuration) *sql.DB {
 	if pingErr != nil {
 		panic(fmt.Sprintf("unable to connect to DB using %s: %s\n", conn, pingErr))
 	}
+
+	hm.AddUserHook(boil.BeforeDeleteHook, ensureAdminAndGuest)
+
 	return db
 }

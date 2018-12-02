@@ -59,6 +59,7 @@ func isEmailInUse(email string, db DB) bool {
 	return false
 }
 
+
 func CreateTenant(data *SignupData, db DB) (*hm.Tenant, error) {
 	email := strings.ToLower(data.Email)
 	if isEmailInUse(email, db) {
