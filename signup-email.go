@@ -6,11 +6,10 @@ import (
 	"github.com/nathanstitt/hippo/models"
 )
 
-func signupEmail(email string, tenant *hm.Tenant, config Configuration) (string, error) {
+func signupEmail(email string, tenant *hm.Tenant, config Configuration) *hermes.Body {
 	productName := config.String("product_name")
 	domain := config.String("domain")
-	mail := MakeEmailMessage(tenant, config)
-	body := hermes.Body{
+	return &hermes.Body{
 		Name: email,
 		Intros: []string{
 			fmt.Sprintf("You have received this email because %s was used to sign up for TheScrumGame.com", email),
@@ -31,5 +30,4 @@ func signupEmail(email string, tenant *hm.Tenant, config Configuration) (string,
 		},
 		Signature: "Thanks!",
 	}
-	return mail.GenerateHTML(hermes.Email{ Body: body })
 }

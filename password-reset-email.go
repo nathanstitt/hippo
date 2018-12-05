@@ -6,12 +6,12 @@ import (
 	"github.com/nathanstitt/hippo/models"
 )
 
-func passwordResetEmail(user *hm.User, token string, db DB, config Configuration) (string, error) {
+func passwordResetEmail(user *hm.User, token string, db DB, config Configuration) *hermes.Body {
 	// email string
 	productName := config.String("product_name")
 	domain := config.String("domain")
-	mail := MakeEmailMessage(user.Tenant().OneP(db), config)
-	body := hermes.Body{
+
+	return &hermes.Body{
 		Name: user.Email,
 		Intros: []string{
 			fmt.Sprintf("You have received this email because someone requested to reset the password for email address %s at %s", user.Email, productName),
@@ -32,6 +32,4 @@ func passwordResetEmail(user *hm.User, token string, db DB, config Configuration
 		},
 		Signature: "Thanks!",
 	}
-
-	return mail.GenerateHTML(hermes.Email{ Body: body })
 }

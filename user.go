@@ -136,7 +136,6 @@ func UserPasswordResetHandler() func (c *gin.Context) {
 		}
 		email := c.PostForm("email")
 		token, _ := EncryptStringProperty("email", email)
-
 		user := FindUserByEmail(email, db)
 		if user != nil {
 			err := deliverResetEmail(user, token, db, GetConfig(c))
@@ -146,8 +145,9 @@ func UserPasswordResetHandler() func (c *gin.Context) {
 			}
 		}
 		if IsDevMode {
-			fmt.Printf("link: /forgot-password?t=%s\n", token)
+			log.Printf("used reset password link: /forgot-password?t=%s\n", token)
 		}
+
 		c.HTML(http.StatusOK, "invite-sent.html", gin.H{ "email": email})
 	}
 }

@@ -3,6 +3,7 @@ package hippo
 import (
 	"io"
 	"fmt"
+	"log"
 	"flag"
 	"bytes"
 	"context"
@@ -13,6 +14,7 @@ import (
 	"net/http/httptest"
 	"gopkg.in/urfave/cli.v1"
 	"github.com/onsi/ginkgo"
+	"github.com/go-mail/mail"
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
 	"github.com/nathanstitt/hippo/models"
@@ -20,18 +22,23 @@ import (
 //	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-type FakeEmailSender struct {
-	to string
-	subject string
-	body string
+type TestEmailDelivery struct {
+	To string
+	Subject string
+	Contents string
 }
 
-func (f *FakeEmailSender) SendEmail(config Configuration, to string, subject string, body string) error {
-	f.to, f.subject, f.body = to, subject, body
-	return nil
+func (f *TestEmailDelivery) SendEmail(config Configuration, m *mail.Message) error {
+	f.To, f.Subject = m.GetHeader("To")[0], m.GetHeader("Subject")[0]
+	buf := new(bytes.Buffer)
+	_, err := m.WriteTo(buf)
+	if err == nil {
+		f.Contents = buf.String()
+	}
+	return err
 }
 
-var testEmail *FakeEmailSender
+var LastEmailDelivery *TestEmailDelivery
 
 func testingContextMiddleware(config Configuration, tx DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -118,10 +125,12 @@ var testingDBConn *sql.DB = nil;
 func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 	boil.DebugMode = flags != nil && flags.DebugDB
 
-	testEmail = &FakeEmailSender{}
-	EmailSender = testEmail;
+	LastEmailDelivery = &TestEmailDelivery{}
+	EmailSender = LastEmailDelivery;
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = ioutil.Discard
+	log.SetOutput(ioutil.Discard)
+
 	set := flag.NewFlagSet("test", 0)
 	set.String(
 		"session_secret", TestingEnvironment.SessionSecret, "doc",

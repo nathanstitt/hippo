@@ -37,6 +37,10 @@ func Initialize() *cli.App {
 			Usage:  "The name of the product",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "product_email",
+			Usage:  "The email address to use for transactional email for the product",
+		}),
+		altsrc.NewStringFlag(cli.StringFlag{
 			Name:   "logo_url",
 			Value:  "",
 			Usage:  "url for logo",
@@ -70,6 +74,11 @@ func Initialize() *cli.App {
 			Name:   "graphql_access_key",
 			Value:  "mysecretkey",
 			Usage:  "32 char long string to use for encrypting session",
+		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "email_server",
+			Value:  "localhost",
+			Usage:  "address of email server",
 		}),
 		cli.StringFlag{
 			Name:   "config",
