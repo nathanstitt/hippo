@@ -96,7 +96,7 @@ func (email *Email) BuildMessage() (*mail.Message, error) {
 	return m, nil
 }
 
-func (email *Email) deliver() error {
+func (email *Email) Deliver() error {
 	m, err := email.BuildMessage()
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func deliverResetEmail(user *hm.User, token string, db DB, config Configuration)
 	email.Body = passwordResetEmail(user, token, db, config)
 	email.To = user.Email
 	email.Subject = fmt.Sprintf("Password Reset for %s", config.String("product_name"))
-	return email.deliver()
+	return email.Deliver()
 }
 
 func deliverLoginEmail(emailAddress string, tenant *hm.Tenant, config Configuration) error {
@@ -118,5 +118,5 @@ func deliverLoginEmail(emailAddress string, tenant *hm.Tenant, config Configurat
 	email.Body = signupEmail(emailAddress, tenant, config)
 	email.To = emailAddress
 	email.Subject = fmt.Sprintf("Login to %s", config.String("product_name"))
-	return email.deliver()
+	return email.Deliver()
 }

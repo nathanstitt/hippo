@@ -15,7 +15,7 @@ var _ = Describe("Sending Email", func() {
 			Name: "test@test.com",
 			Signature: "GO AWAY!",
 		}
-		err := email.deliver()
+		err := email.Deliver()
 		Expect(err).To(BeNil())
 		Expect(LastEmailDelivery.To).To(Equal("test@test.com"))
 		Expect(LastEmailDelivery.Contents).To(
