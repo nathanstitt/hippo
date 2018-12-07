@@ -13,6 +13,7 @@ import (
 type Email struct {
 	To string
 	From string
+	ReplyTo string
 	Subject string
 	Body *hermes.Body
 	Tenant *hm.Tenant
@@ -37,7 +38,6 @@ func MakeEmailMessage(tenant *hm.Tenant, config Configuration) *Email {
 		Configuration: config,
 		Tenant: tenant,
 		Product: product,
-
 	}
 }
 
@@ -67,31 +67,40 @@ func (s *LocalhostEmailSender) SendEmail(config Configuration, m *mail.Message) 
 
 var EmailSender EmailSenderInterface = &LocalhostEmailSender{}
 
-func (email *Email) deliver() error {
+func (email *Email) BuildMessage() (*mail.Message, error) {
 	h := hermes.Hermes{
 		Product: email.Product,
 	}
 	if email.Body == nil {
-		return fmt.Errorf("Unable to send email without body")
+		return nil, fmt.Errorf("Unable to send email without body")
 	}
 	contents := hermes.Email{ Body: *email.Body}
 	htmlEmailBody, err := h.GenerateHTML(contents)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	textEmailBody, err := h.GeneratePlainText(contents)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
 	m := mail.NewMessage()
+	if email.ReplyTo != "" {
+		m.SetHeader("ReplyTo", email.From)
+	}
 	m.SetHeader("From", email.From)
 	m.SetHeader("To", email.To)
 	m.SetHeader("Subject", email.Subject)
 	m.SetBody("text/plain", textEmailBody)
 	m.AddAlternative("text/html", htmlEmailBody)
+	return m, nil
+}
 
+func (email *Email) deliver() error {
+	m, err := email.BuildMessage()
+	if err != nil {
+		return err
+	}
 	return EmailSender.SendEmail(email.Configuration, m)
 }
 
