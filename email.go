@@ -21,7 +21,7 @@ type Email struct {
 	Configuration Configuration
 }
 
-func MakeEmailMessage(tenant *hm.Tenant, config Configuration) *Email {
+func NewEmailMessage(tenant *hm.Tenant, config Configuration) *Email {
 	product := hermes.Product{
 		// Appears in header & footer of e-mails
 		Name: tenant.Name,
@@ -106,7 +106,7 @@ func (email *Email) deliver() error {
 
 
 func deliverResetEmail(user *hm.User, token string, db DB, config Configuration) error {
-	email := MakeEmailMessage(user.Tenant().OneP(db), config)
+	email := NewEmailMessage(user.Tenant().OneP(db), config)
 	email.Body = passwordResetEmail(user, token, db, config)
 	email.To = user.Email
 	email.Subject = fmt.Sprintf("Password Reset for %s", config.String("product_name"))
@@ -114,7 +114,7 @@ func deliverResetEmail(user *hm.User, token string, db DB, config Configuration)
 }
 
 func deliverLoginEmail(emailAddress string, tenant *hm.Tenant, config Configuration) error {
-	email := MakeEmailMessage(tenant, config)
+	email := NewEmailMessage(tenant, config)
 	email.Body = signupEmail(emailAddress, tenant, config)
 	email.To = emailAddress
 	email.Subject = fmt.Sprintf("Login to %s", config.String("product_name"))

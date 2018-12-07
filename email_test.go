@@ -9,7 +9,7 @@ import (
 var _ = Describe("Sending Email", func() {
 
 	Test("can send", &TestFlags{}, func(env *TestEnv) {
-		email := MakeEmailMessage(env.Tenant, env.Config)
+		email := NewEmailMessage(env.Tenant, env.Config)
 		email.To = "test@test.com"
 		email.Body = &hermes.Body{
 			Name: "test@test.com",
