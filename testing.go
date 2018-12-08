@@ -29,7 +29,14 @@ type TestEmailDelivery struct {
 }
 
 func (f *TestEmailDelivery) SendEmail(config Configuration, m *mail.Message) error {
-	f.To, f.Subject = m.GetHeader("To")[0], m.GetHeader("Subject")[0]
+	to := m.GetHeader("To")
+	if len(to) > 0 {
+		f.To = to[0];
+	}
+	subj := m.GetHeader("Subject")
+	if len(subj) > 0 {
+		f.Subject = subj[0];
+	}
 	buf := new(bytes.Buffer)
 	_, err := m.WriteTo(buf)
 	if err == nil {
@@ -52,7 +59,6 @@ type TestEnv struct {
 	Router *gin.Engine
 	DB DB
 	Config Configuration
-	Webpack *webpacking.WebPacking
 	Tenant *hm.Tenant
 }
 
@@ -184,7 +190,6 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		flags.WithRoutes(router, config, webpack)
 	}
 
-	//	ginkgo.It(description, func() {
 	defer func() {
 		tx.Rollback()
 	}()
@@ -193,7 +198,6 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		Router: router,
 		DB: tx,
 		Config: config,
-		Webpack: webpack,
 		Tenant: tenant,
 	});
 }

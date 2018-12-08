@@ -11,10 +11,7 @@ import (
 
 
 type Email struct {
-	To string
-	From string
-	ReplyTo string
-	Subject string
+	Message *mail.Message
 	Body *hermes.Body
 	Tenant *hm.Tenant
 	Product hermes.Product
@@ -34,7 +31,7 @@ func NewEmailMessage(tenant *hm.Tenant, config Configuration) *Email {
 		),
 	}
 	return &Email{
-		From: config.String("product_email"),
+		Message: mail.NewMessage(),
 		Configuration: config,
 		Tenant: tenant,
 		Product: product,
@@ -67,56 +64,54 @@ func (s *LocalhostEmailSender) SendEmail(config Configuration, m *mail.Message) 
 
 var EmailSender EmailSenderInterface = &LocalhostEmailSender{}
 
-func (email *Email) BuildMessage() (*mail.Message, error) {
+func setAddress(mail *mail.Message, header string, address string, names []string) {
+	if len(names) > 0 {
+		mail.SetAddressHeader(header, address, names[0])
+	} else {
+		mail.SetHeader(header, address)
+	}
+}
+
+func (email *Email) SetSubject(subject string, a ...interface{}) {
+	email.Message.SetHeader("Subject", fmt.Sprintf(subject, a...))
+}
+func (email *Email) SetFrom(address string, name ...string) {
+	setAddress(email.Message, "From", address, name)
+}
+
+func (email *Email) SetTo(address string, name ...string) {
+	setAddress(email.Message, "To", address, name)
+}
+func (email *Email) SetReplyTo(address string, name ...string) {
+	setAddress(email.Message, "ReplyTo", address, name)
+}
+
+func (email *Email) BuildMessage() error {
 	h := hermes.Hermes{
 		Product: email.Product,
 	}
 	if email.Body == nil {
-		return nil, fmt.Errorf("Unable to send email without body")
+		return fmt.Errorf("Unable to send email without body")
 	}
 	contents := hermes.Email{ Body: *email.Body}
 	htmlEmailBody, err := h.GenerateHTML(contents)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	textEmailBody, err := h.GeneratePlainText(contents)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	m := mail.NewMessage()
-	if email.ReplyTo != "" {
-		m.SetHeader("ReplyTo", email.From)
-	}
-	m.SetHeader("From", email.From)
-	m.SetHeader("To", email.To)
-	m.SetHeader("Subject", email.Subject)
-	m.SetBody("text/plain", textEmailBody)
-	m.AddAlternative("text/html", htmlEmailBody)
-	return m, nil
+	email.Message.SetBody("text/plain", textEmailBody)
+	email.Message.AddAlternative("text/html", htmlEmailBody)
+	return nil
 }
 
 func (email *Email) Deliver() error {
-	m, err := email.BuildMessage()
+	err := email.BuildMessage()
 	if err != nil {
 		return err
 	}
-	return EmailSender.SendEmail(email.Configuration, m)
-}
-
-
-func deliverResetEmail(user *hm.User, token string, db DB, config Configuration) error {
-	email := NewEmailMessage(user.Tenant().OneP(db), config)
-	email.Body = passwordResetEmail(user, token, db, config)
-	email.To = user.Email
-	email.Subject = fmt.Sprintf("Password Reset for %s", config.String("product_name"))
-	return email.Deliver()
-}
-
-func deliverLoginEmail(emailAddress string, tenant *hm.Tenant, config Configuration) error {
-	email := NewEmailMessage(tenant, config)
-	email.Body = signupEmail(emailAddress, tenant, config)
-	email.To = emailAddress
-	email.Subject = fmt.Sprintf("Login to %s", config.String("product_name"))
-	return email.Deliver()
+	return EmailSender.SendEmail(email.Configuration, email.Message)
 }

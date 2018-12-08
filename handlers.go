@@ -96,6 +96,22 @@ func RenderApplication(user *hm.User, c *gin.Context) {
 	})
 }
 
+func deliverResetEmail(user *hm.User, token string, db DB, config Configuration) error {
+	email := NewEmailMessage(user.Tenant().OneP(db), config)
+	email.Body = passwordResetEmail(user, token, db, config)
+	email.SetTo(user.Email, user.Name)
+	email.SetSubject("Password Reset for %s", config.String("product_name"))
+	return email.Deliver()
+}
+
+func deliverLoginEmail(emailAddress string, tenant *hm.Tenant, config Configuration) error {
+	email := NewEmailMessage(tenant, config)
+	email.Body = signupEmail(emailAddress, tenant, config)
+	email.SetTo(emailAddress, "")
+	email.SetSubject("Login to %s", config.String("product_name"))
+	return email.Deliver()
+}
+
 func BootstrapData(user *hm.User, cfg Configuration) template.JS {
 	type BootstrapDataT map[string]interface{}
 	bootstrapData, err := json.Marshal(
