@@ -85,6 +85,9 @@ func (email *Email) SetTo(address string, name ...string) {
 func (email *Email) SetReplyTo(address string, name ...string) {
 	setAddress(email.Message, "ReplyTo", address, name)
 }
+func (email *Email) FormatAddress(address, name string) string {
+	return email.Message.FormatAddress(address, name)
+}
 
 func (email *Email) BuildMessage() error {
 	h := hermes.Hermes{
