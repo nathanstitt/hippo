@@ -182,7 +182,7 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		defer fake.Restore()
 		router.SetFuncMap(template.FuncMap{
 			"asset": func(asset string) (template.HTML, error) {
-				return template.HTML(asset), nil
+				return template.HTML(fmt.Sprintf("<asset name=\"%s\" />", asset)), nil
 			},
 		})
 		router.LoadHTMLGlob("templates/*")

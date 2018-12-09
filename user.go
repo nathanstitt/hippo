@@ -3,33 +3,19 @@ package hippo
 import (
 	"fmt"
 	"log"
-//	"time"
 	"strings"
 	"net/http"
 	"encoding/json"
-//	"github.com/lib/pq"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-//	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-contrib/sessions"
 	"github.com/volatiletech/sqlboiler/boil"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
 	"github.com/nathanstitt/hippo/models"
 )
 
-// type User struct {
-//	ID string `gorm:"type:uuid;primary_key" json:"id"`
-//	Tenant Tenant `json:"-"`
-//	TenantID string `json:"-"`
-//	RoleID  int
-//	Role Role
-//	Name   string `json:"name"`
-//	Email  string `json:"email"`
-//	PasswordDigest string `json:"-"`
-//	CreatedAt time.Time `json:"created_at"`
-//	UpdatedAt time.Time `json:"updated_at"`
-// }
-
+var FindUser = hm.FindUser
+var FindUserP = hm.FindUserP
 
 func IsValidPassword(u *hm.User, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordDigest), []byte(password))

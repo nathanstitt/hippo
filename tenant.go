@@ -12,28 +12,6 @@ import (
 	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
-// type Subscription struct {
-//	ID uint `gorm:"primary_key"`
-//	SubscriptionID string
-//	Name string
-//	Description string
-//	Price float32
-//	TrialDuration int8
-// }
-
-// type Tenant struct {
-//	ID string `gorm:"type:uuid;primary_key" json:"id"`
-//	Users []User `json:"-"`
-//	Name string `json:"name"`
-//	Email string `json:"email"`
-//	LogoURL string `gorm:"column:logo_url" json:"logo_url"`
-//	HomepageURL string `gorm:"column:homepage_url" json:"homepage_url"`
-//	Identifier string `gorm:"unique_index" json:"identifier"`
-//	Subscription Subscription `json:"subscription"`
-//	CreatedAt time.Time `json:"created_at"`
-//	UpdatedAt time.Time `json:"updated_at"`
-// }
-
 type SignupData struct {
 	Name         string `form:"name"`
 	Email        string `form:"email"`
@@ -41,7 +19,8 @@ type SignupData struct {
 	Tenant       string `form:"tenant"`
 }
 
-
+var FindTenant = hm.FindTenant
+var FindTenantP = hm.FindTenantP
 
 type ApplicationBootstrapData struct {
 	User *hm.User
@@ -49,7 +28,7 @@ type ApplicationBootstrapData struct {
 	WebDomain string
 }
 
-func isEmailInUse(email string, db DB) bool {
+func IsEmailInUse(email string, db DB) bool {
 	lowerEmail := strings.ToLower(email)
 	m := Where("email = ?", lowerEmail)
 	if (hm.Tenants(m).ExistsP(db) ||
@@ -62,7 +41,7 @@ func isEmailInUse(email string, db DB) bool {
 
 func CreateTenant(data *SignupData, db DB) (*hm.Tenant, error) {
 	email := strings.ToLower(data.Email)
-	if isEmailInUse(email, db) {
+	if IsEmailInUse(email, db) {
 		return nil, errors.New("email is in use")
 	}
 	tenant := hm.Tenant{
