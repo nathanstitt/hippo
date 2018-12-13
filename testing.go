@@ -185,7 +185,7 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 				return template.HTML(fmt.Sprintf("<asset name=\"%s\" />", asset)), nil
 			},
 		})
-		router.LoadHTMLGlob("templates/*")
+		router.LoadHTMLGlob("views/*")
 
 		flags.WithRoutes(router, config, webpack)
 	}

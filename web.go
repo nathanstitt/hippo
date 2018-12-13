@@ -36,30 +36,12 @@ func CreateRouter() *gin.Engine {
 }
 
 func AddGraphqlProxyRoutes(r *gin.Engine, config Configuration) {
-	// Recovery middleware recovers from any panics and writes a 500 if there was one.
-
 	graphql_port := config.Int("graphql_port")
-
-	r.LoadHTMLGlob("templates/*")
-//	r.Static("/public", "./public")
-
+	r.LoadHTMLGlob("views/*")
 	r.OPTIONS("/v1/*query", allowCorsReply)
 	r.OPTIONS("/v1alpha1/*graphql", allowCorsReply)
 	r.POST("/v1/*query", reverseProxy(graphql_port))
 	r.POST("/v1alpha1/*graphql", reverseProxy(graphql_port))
 	r.POST("/apis/migrate", reverseProxy(graphql_port))
 	r.GET("/v1alpha1/*graphql", reverseProxy(graphql_port))
-
-//	r.POST("/login", UserLoginHandler)
-//	r.POST("/logout", UserLogoutHandler)
-//	r.POST("/signup", TenantSignupHandler)
-//	r.POST("/reset-password", UserPasswordResetHandler)
-//	r.GET("/forgot-password", UserDisplayPasswordResetHandler)
-
-	// r.GET("/ping", func(c *gin.Context) {
-	//	c.JSON(200, gin.H{
-	//		"message": "pong",
-	//	})
-	// })
-
 }
