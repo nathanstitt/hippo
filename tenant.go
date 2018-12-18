@@ -19,9 +19,6 @@ type SignupData struct {
 	Tenant       string `form:"tenant"`
 }
 
-var FindTenant = hm.FindTenant
-var FindTenantP = hm.FindTenantP
-
 type ApplicationBootstrapData struct {
 	User *hm.User
 	JWT string
@@ -37,7 +34,6 @@ func IsEmailInUse(email string, db DB) bool {
 	}
 	return false
 }
-
 
 func CreateTenant(data *SignupData, db DB) (*hm.Tenant, error) {
 	email := strings.ToLower(data.Email)

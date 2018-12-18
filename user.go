@@ -14,9 +14,6 @@ import (
 	"github.com/nathanstitt/hippo/models"
 )
 
-var FindUser = hm.FindUser
-var FindUserP = hm.FindUserP
-
 func IsValidPassword(u *hm.User, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordDigest), []byte(password))
 	return err == nil;
@@ -73,6 +70,18 @@ func UserFromSession(c *gin.Context) *hm.User {
 		return nil
 	}
 	return user
+}
+
+func TenantAdminUser(tenantID string, db DB) *hm.User {
+	return hm.Users(
+		Where("tenant_id=? and role_id=?", tenantID, UserAdminRoleID),
+	).OneP(db)
+}
+
+func TenantGuestUser(tenantID string, db DB) *hm.User {
+	return hm.Users(
+		Where("tenant_id=? and role_id=?", tenantID, UserGuestRoleID),
+	).OneP(db)
 }
 
 func userForInviteToken(token string, c *gin.Context) (*hm.User, error) {

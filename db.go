@@ -14,9 +14,11 @@ type DB = *sql.Tx
 // so that other users of Hippo don't have to import models
 type Tenant = hm.Tenant
 var Tenants = hm.Tenants
+var FindTenantP = hm.FindTenantP
 
 type User = hm.User
 var Users = hm.Users
+var FindUserP = hm.FindUserP
 
 type Subscription = hm.Subscription
 var Subscriptions = hm.Subscriptions
