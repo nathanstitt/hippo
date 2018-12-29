@@ -19,7 +19,6 @@ import (
 	"github.com/nathanstitt/webpacking"
 	"github.com/nathanstitt/hippo/models"
 	"github.com/volatiletech/sqlboiler/boil"
-//	. "github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 type TestEmailDelivery struct {
@@ -65,7 +64,20 @@ type TestEnv struct {
 type RequestOptions struct {
 	Body *string
 	SessionCookie string
+	ContentType string
 	User *hm.User
+}
+
+func contentType(method string, options *RequestOptions) string {
+	if options != nil && options.ContentType != "" {
+		return options.ContentType
+	} else {
+		if method == "POST" {
+			return "application/x-www-form-urlencoded"
+		} else {
+			return "application/json"
+		}
+	}
 }
 
 func (env *TestEnv) MakeRequest(
@@ -80,6 +92,7 @@ func (env *TestEnv) MakeRequest(
 		}
 	}
 	req, _ := http.NewRequest(method, path, body)
+	req.Header.Set("ContentType", contentType(method, options))
 	if options != nil {
 		if options.User != nil {
 			req.Header.Set("Cookie",
@@ -152,7 +165,6 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		testingDBConn = ConnectDB(config)
 	}
 
-
 	ctx := context.Background()
 	tx, _ := testingDBConn.BeginTx(ctx, nil)
 
@@ -199,7 +211,7 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 		DB: tx,
 		Config: config,
 		Tenant: tenant,
-	});
+	})
 }
 
 
