@@ -5,8 +5,9 @@ require (
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/sprig v2.16.0+incompatible // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
+	github.com/apmckinlay/gsuneido v0.0.0-20181212185759-3304b3d5e5ed // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/ericlagergren/decimal v0.0.0-20180316053741-2a5821154e15 // indirect
+	github.com/ericlagergren/decimal v0.0.0-20181210064008-7f7cf8a362e5 // indirect
 	github.com/gin-contrib/sessions v0.0.0-20181124110724-7687b645ca6b
 	github.com/gin-contrib/sse v0.0.0-20170109093832-22d885f9ecc7 // indirect
 	github.com/gin-gonic/gin v1.3.0
@@ -23,7 +24,7 @@ require (
 	github.com/lib/pq v1.0.0
 	github.com/matcornic/hermes v1.2.0
 	github.com/mattn/go-isatty v0.0.4 // indirect
-	github.com/mattn/go-runewidth v0.0.3 // indirect
+	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nathanstitt/webpacking v0.0.0-20181127003608-c4aefc428777
 	github.com/olekukonko/tablewriter v0.0.1 // indirect
 	github.com/onsi/ginkgo v1.7.0
@@ -37,8 +38,9 @@ require (
 	github.com/volatiletech/null v8.0.0+incompatible
 	github.com/volatiletech/sqlboiler v3.1.0+incompatible
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
-	golang.org/x/net v0.0.0-20181213202711-891ebc4b82d6 // indirect
-	golang.org/x/sys v0.0.0-20181213200352-4d1cda033e06 // indirect
+	golang.org/x/net v0.0.0-20181217023233-e147a9138326 // indirect
+	golang.org/x/sys v0.0.0-20181217223516-dcdaa6325bcb // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
 	gopkg.in/russross/blackfriday.v2 v2.0.1 // indirect
@@ -48,3 +50,5 @@ require (
 )
 
 replace gopkg.in/russross/blackfriday.v2 v2.0.1 => github.com/russross/blackfriday/v2 v2.0.1
+
+replace github.com/ericlagergren/decimal v0.0.0-20181210064008-7f7cf8a362e5 => github.com/ericlagergren/decimal/v3 v3.3.0
