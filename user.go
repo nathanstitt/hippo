@@ -74,7 +74,7 @@ func UserFromSession(c *gin.Context) *hm.User {
 
 func TenantAdminUser(tenantID string, db DB) *hm.User {
 	return hm.Users(
-		Where("tenant_id=? and role_id=?", tenantID, UserAdminRoleID),
+		Where("tenant_id=? and role_id=?", tenantID, UserOwnerRoleID),
 	).OneP(db)
 }
 

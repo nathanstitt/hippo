@@ -2,7 +2,6 @@ package hippo
 
 import (
 	"fmt"
-//	"strings"
 	"github.com/nathanstitt/hippo/models"
 	"github.com/volatiletech/sqlboiler/boil"
 	. "github.com/volatiletech/sqlboiler/queries/qm"
@@ -13,11 +12,11 @@ const (
 	UserGuestRoleID		= 1
 	UserMemberRoleID	= 2
 	UserManagerRoleID	= 3
-	UserAdminRoleID		= 4
+	UserOwnerRoleID		= 4
 )
 
 func UserIsGuest(u *hm.User) bool {
-	return u.RoleID == UserAdminRoleID
+	return u.RoleID == UserOwnerRoleID
 }
 func UserIsMember(u *hm.User) bool {
 	return u.RoleID == UserMemberRoleID
@@ -25,14 +24,19 @@ func UserIsMember(u *hm.User) bool {
 func UserIsManager(u *hm.User) bool {
 	return u.RoleID == UserManagerRoleID
 }
-func UserIsAdmin(u *hm.User) bool {
-	return u.RoleID == UserAdminRoleID
+func UserIsOwner(u *hm.User) bool {
+	return u.RoleID == UserOwnerRoleID
+}
+
+func UserIsAdmin(u *hm.User, config Configuration) bool {
+	return u.RoleID == UserOwnerRoleID &&
+		u.TenantID == config.String("administrator_uuid")
 }
 
 func UserRoleName(u *hm.User) string {
 	switch u.RoleID {
-	case UserAdminRoleID:
-		return "admin"
+	case UserOwnerRoleID:
+		return "owner"
 	case UserManagerRoleID:
 		return "manager"
 	case UserMemberRoleID:
@@ -47,8 +51,8 @@ func UserRoleName(u *hm.User) string {
 
 func UserAllowedRoleNames(u *hm.User) []string {
 	switch u.RoleID {
-	case UserAdminRoleID:
-		return []string{"admin", "manager", "member", "guest"}
+	case UserOwnerRoleID:
+		return []string{"owner", "manager", "member", "guest"}
 	case UserManagerRoleID:
 		return []string{"manager", "member", "guest"}
 	case UserMemberRoleID:
@@ -60,13 +64,13 @@ func UserAllowedRoleNames(u *hm.User) []string {
 	}
 }
 
-// Define hook to prevent deleing last admin or guest account
-func ensureAdminAndGuest(exec boil.Executor, u *hm.User) error {
+// Define hook to prevent deleing last owner or guest account
+func ensureOwnerAndGuest(exec boil.Executor, u *hm.User) error {
 
 	count := hm.Users(Where("tenant_id = ? and role_id = ?",
 		u.TenantID, u.RoleID)).CountP(exec)
 
-	if ((UserIsAdmin(u) || UserIsGuest(u)) && (count < 2)) {
+	if ((UserIsOwner(u) || UserIsGuest(u)) && (count < 2)) {
 		return fmt.Errorf("all accounts must have at least 1 user with role %s present", UserRoleName(u));
 	}
 	return nil

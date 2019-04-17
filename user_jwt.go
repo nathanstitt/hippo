@@ -10,7 +10,7 @@ func JWTForUser(u *hm.User, config Configuration) string {
 	// and the claims you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"name": u.Name,
-		"admin": UserIsAdmin(u),
+		"admin": UserIsAdmin(u, config),
 		"graphql_claims": jwt.MapClaims{
 			"x-hasura-default-role": UserRoleName(u),
 			"x-hasura-allowed-roles": UserAllowedRoleNames(u),

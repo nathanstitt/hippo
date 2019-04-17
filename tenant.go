@@ -55,7 +55,7 @@ func CreateTenant(data *SignupData, db DB) (*hm.Tenant, error) {
 	admin = &hm.User{
 		Name: data.Name,
 		Email: data.Email,
-		RoleID: UserAdminRoleID,
+		RoleID: UserOwnerRoleID,
 	}
 	SetUserPassword(admin, data.Password)
 	if err = tenant.AddUsers(db, true, admin); err != nil {

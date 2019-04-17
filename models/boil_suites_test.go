@@ -103,8 +103,8 @@ func TestInsert(t *testing.T) {
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
 	t.Run("TenantToSubscriptionUsingSubscription", testTenantToOneSubscriptionUsingSubscription)
-	t.Run("UserToTenantUsingTenant", testUserToOneTenantUsingTenant)
 	t.Run("UserToRoleUsingRole", testUserToOneRoleUsingRole)
+	t.Run("UserToTenantUsingTenant", testUserToOneTenantUsingTenant)
 }
 
 // TestOneToOne tests cannot be run in parallel
@@ -123,8 +123,8 @@ func TestToMany(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
 	t.Run("TenantToSubscriptionUsingTenants", testTenantToOneSetOpSubscriptionUsingSubscription)
-	t.Run("UserToTenantUsingUsers", testUserToOneSetOpTenantUsingTenant)
 	t.Run("UserToRoleUsingUsers", testUserToOneSetOpRoleUsingRole)
+	t.Run("UserToTenantUsingUsers", testUserToOneSetOpTenantUsingTenant)
 }
 
 // TestToOneRemove tests cannot be run in parallel

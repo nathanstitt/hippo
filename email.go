@@ -30,12 +30,14 @@ func NewEmailMessage(tenant *hm.Tenant, config Configuration) *Email {
 			config.String("product_name"),
 		),
 	}
-	return &Email{
+	email := &Email{
 		Message: mail.NewMessage(),
 		Configuration: config,
 		Tenant: tenant,
 		Product: product,
 	}
+	email.SetFrom(tenant.Email, tenant.Name)
+	return email
 }
 
 func decodeInviteToken(token string) (string, error) {
@@ -54,6 +56,7 @@ type LocalhostEmailSender struct {}
 func (s *LocalhostEmailSender) SendEmail(config Configuration, m *mail.Message) error {
 	host := config.String("email_server")
 	d := mail.Dialer{Host: host, Port: 25}
+	d.StartTLSPolicy = mail.NoStartTLS
 	if IsDevMode {
 		m.WriteTo(os.Stdout)
 		return nil

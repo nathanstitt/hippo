@@ -60,17 +60,17 @@ var UserColumns = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-	Tenant string
 	Role   string
+	Tenant string
 }{
-	Tenant: "Tenant",
 	Role:   "Role",
+	Tenant: "Tenant",
 }
 
 // userR is where relationships are stored.
 type userR struct {
-	Tenant *Tenant
 	Role   *Role
+	Tenant *Tenant
 }
 
 // NewStruct creates a new relationship struct
@@ -364,20 +364,6 @@ func (q userQuery) Exists(exec boil.Executor) (bool, error) {
 	return count > 0, nil
 }
 
-// Tenant pointed to by the foreign key.
-func (o *User) Tenant(mods ...qm.QueryMod) tenantQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("id=?", o.TenantID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	query := Tenants(queryMods...)
-	queries.SetFrom(query.Query, "\"tenants\"")
-
-	return query
-}
-
 // Role pointed to by the foreign key.
 func (o *User) Role(mods ...qm.QueryMod) roleQuery {
 	queryMods := []qm.QueryMod{
@@ -392,101 +378,18 @@ func (o *User) Role(mods ...qm.QueryMod) roleQuery {
 	return query
 }
 
-// LoadTenant allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (userL) LoadTenant(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
-	var slice []*User
-	var object *User
-
-	if singular {
-		object = maybeUser.(*User)
-	} else {
-		slice = *maybeUser.(*[]*User)
+// Tenant pointed to by the foreign key.
+func (o *User) Tenant(mods ...qm.QueryMod) tenantQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("id=?", o.TenantID),
 	}
 
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &userR{}
-		}
-		args = append(args, object.TenantID)
+	queryMods = append(queryMods, mods...)
 
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &userR{}
-			}
+	query := Tenants(queryMods...)
+	queries.SetFrom(query.Query, "\"tenants\"")
 
-			for _, a := range args {
-				if a == obj.TenantID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.TenantID)
-
-		}
-	}
-
-	query := NewQuery(qm.From(`tenants`), qm.WhereIn(`id in ?`, args...))
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.Query(e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load Tenant")
-	}
-
-	var resultSlice []*Tenant
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Tenant")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for tenants")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tenants")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Tenant = foreign
-		if foreign.R == nil {
-			foreign.R = &tenantR{}
-		}
-		foreign.R.Users = append(foreign.R.Users, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.TenantID == foreign.ID {
-				local.R.Tenant = foreign
-				if foreign.R == nil {
-					foreign.R = &tenantR{}
-				}
-				foreign.R.Users = append(foreign.R.Users, local)
-				break
-			}
-		}
-	}
-
-	return nil
+	return query
 }
 
 // LoadRole allows an eager lookup of values, cached into the
@@ -586,58 +489,98 @@ func (userL) LoadRole(e boil.Executor, singular bool, maybeUser interface{}, mod
 	return nil
 }
 
-// SetTenantP of the user to the related item.
-// Sets o.R.Tenant to related.
-// Adds o to related.R.Users.
-// Panics on error.
-func (o *User) SetTenantP(exec boil.Executor, insert bool, related *Tenant) {
-	if err := o.SetTenant(exec, insert, related); err != nil {
-		panic(boil.WrapErr(err))
-	}
-}
+// LoadTenant allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (userL) LoadTenant(e boil.Executor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
 
-// SetTenant of the user to the related item.
-// Sets o.R.Tenant to related.
-// Adds o to related.R.Users.
-func (o *User) SetTenant(exec boil.Executor, insert bool, related *Tenant) error {
-	var err error
-	if insert {
-		if err = related.Insert(exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"users\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"tenant_id"}),
-		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.DebugMode {
-		fmt.Fprintln(boil.DebugWriter, updateQuery)
-		fmt.Fprintln(boil.DebugWriter, values)
-	}
-
-	if _, err = exec.Exec(updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.TenantID = related.ID
-	if o.R == nil {
-		o.R = &userR{
-			Tenant: related,
-		}
+	if singular {
+		object = maybeUser.(*User)
 	} else {
-		o.R.Tenant = related
+		slice = *maybeUser.(*[]*User)
 	}
 
-	if related.R == nil {
-		related.R = &tenantR{
-			Users: UserSlice{o},
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
 		}
+		args = append(args, object.TenantID)
+
 	} else {
-		related.R.Users = append(related.R.Users, o)
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.TenantID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.TenantID)
+
+		}
+	}
+
+	query := NewQuery(qm.From(`tenants`), qm.WhereIn(`id in ?`, args...))
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.Query(e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Tenant")
+	}
+
+	var resultSlice []*Tenant
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Tenant")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for tenants")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for tenants")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Tenant = foreign
+		if foreign.R == nil {
+			foreign.R = &tenantR{}
+		}
+		foreign.R.Users = append(foreign.R.Users, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.TenantID == foreign.ID {
+				local.R.Tenant = foreign
+				if foreign.R == nil {
+					foreign.R = &tenantR{}
+				}
+				foreign.R.Users = append(foreign.R.Users, local)
+				break
+			}
+		}
 	}
 
 	return nil
@@ -691,6 +634,63 @@ func (o *User) SetRole(exec boil.Executor, insert bool, related *Role) error {
 
 	if related.R == nil {
 		related.R = &roleR{
+			Users: UserSlice{o},
+		}
+	} else {
+		related.R.Users = append(related.R.Users, o)
+	}
+
+	return nil
+}
+
+// SetTenantP of the user to the related item.
+// Sets o.R.Tenant to related.
+// Adds o to related.R.Users.
+// Panics on error.
+func (o *User) SetTenantP(exec boil.Executor, insert bool, related *Tenant) {
+	if err := o.SetTenant(exec, insert, related); err != nil {
+		panic(boil.WrapErr(err))
+	}
+}
+
+// SetTenant of the user to the related item.
+// Sets o.R.Tenant to related.
+// Adds o to related.R.Users.
+func (o *User) SetTenant(exec boil.Executor, insert bool, related *Tenant) error {
+	var err error
+	if insert {
+		if err = related.Insert(exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"users\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"tenant_id"}),
+		strmangle.WhereClause("\"", "\"", 2, userPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.DebugMode {
+		fmt.Fprintln(boil.DebugWriter, updateQuery)
+		fmt.Fprintln(boil.DebugWriter, values)
+	}
+
+	if _, err = exec.Exec(updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.TenantID = related.ID
+	if o.R == nil {
+		o.R = &userR{
+			Tenant: related,
+		}
+	} else {
+		o.R.Tenant = related
+	}
+
+	if related.R == nil {
+		related.R = &tenantR{
 			Users: UserSlice{o},
 		}
 	} else {

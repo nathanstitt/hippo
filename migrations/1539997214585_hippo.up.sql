@@ -11,7 +11,6 @@ CREATE TABLE subscriptions (
 
 insert into subscriptions (subscription_id, name, description, price) values ( 'free', 'Free', 'Free', 0);
 
-
 create table tenants (
   id uuid primary key default gen_random_uuid()
   ,identifier text not null unique
@@ -20,6 +19,7 @@ create table tenants (
   ,logo_url text
   ,homepage_url text
   ,email text not null
+  ,metadata jsonb
   ,created_at timestamp without time zone NOT NULL default now()
   ,updated_at timestamp without time zone NOT NULL default now()
 );

@@ -26,9 +26,33 @@ func Initialize() *cli.App {
 			Value:  8080,
 			Usage:  "port to listen to",
 		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "verbose",
+			Value:  "info",
+			Usage:  "verbosity to log at",
+		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "vmodule",
+			Value:  "",
+			Usage:  "comma-separated list of pattern=N settings for file-filtered logging",
+		}),
+		altsrc.NewBoolFlag(cli.BoolFlag{
+			Name:   "logtostderr",
+			Usage:  "log to standard error instead of files",
+		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "log_dir",
+			Value:  ".",
+			Usage:  "directory to log to",
+		}),
+		altsrc.NewIntFlag(cli.IntFlag{
+			Name: "webpack_dev_port",
+			Value: 8089,
+			Usage: "port for webpack dev server to listen on",
+		}),
 		altsrc.NewIntFlag(cli.IntFlag{
 			Name:   "graphql_port",
-			Value:  8081,
+			Value:  8091,
 			Usage:  "port to listen to",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
@@ -46,8 +70,8 @@ func Initialize() *cli.App {
 			Usage:  "url for logo",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
-			Name:   "web_domain",
-			Value:  "localhost",
+			Name:   "server_url",
+			Value:  "http://localhost:8080",
 			Usage:  "The domain to use for URLs",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
@@ -61,7 +85,7 @@ func Initialize() *cli.App {
 			Usage:  "name of session cookie",
 		}),
 		altsrc.NewStringFlag(cli.StringFlag{
-			Name:   "db_conn_url",
+			Name:   "db_connection_url",
 			Value:  "",
 			Usage:  "PG database connection string",
 		}),
@@ -79,6 +103,11 @@ func Initialize() *cli.App {
 			Name:   "email_server",
 			Value:  "localhost",
 			Usage:  "address of email server",
+		}),
+		altsrc.NewStringFlag(cli.StringFlag{
+			Name:   "administrator_uuid",
+			Value:  "",
+			Usage:  "uuid of administrator tenant",
 		}),
 		cli.StringFlag{
 			Name:   "config",

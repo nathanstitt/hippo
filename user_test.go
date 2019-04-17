@@ -28,7 +28,7 @@ var _ = Describe("User", func() {
 		user := tenant.R.Users[0]
 		Expect(user.TenantID).To(Equal(tenant.ID))
 
-		Expect(UserIsAdmin(user)).To(BeTrue())
+		Expect(UserIsOwner(user)).To(BeTrue())
 		Expect(UserAllowedRoleNames(user)).Should(ConsistOf(
 			[]string{"admin", "manager", "member", "guest"},
 		))

@@ -481,57 +481,6 @@ func testUsersInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testUserToOneTenantUsingTenant(t *testing.T) {
-
-	tx := MustTx(boil.Begin())
-	defer func() { _ = tx.Rollback() }()
-
-	var local User
-	var foreign Tenant
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, userDBTypes, false, userColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize User struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, tenantDBTypes, false, tenantColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Tenant struct: %s", err)
-	}
-
-	if err := foreign.Insert(tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.TenantID = foreign.ID
-	if err := local.Insert(tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.Tenant().One(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	slice := UserSlice{&local}
-	if err = local.L.LoadTenant(tx, false, (*[]*User)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Tenant == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.Tenant = nil
-	if err = local.L.LoadTenant(tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Tenant == nil {
-		t.Error("struct should have been eager loaded")
-	}
-}
-
 func testUserToOneRoleUsingRole(t *testing.T) {
 
 	tx := MustTx(boil.Begin())
@@ -583,62 +532,57 @@ func testUserToOneRoleUsingRole(t *testing.T) {
 	}
 }
 
-func testUserToOneSetOpTenantUsingTenant(t *testing.T) {
-	var err error
+func testUserToOneTenantUsingTenant(t *testing.T) {
 
 	tx := MustTx(boil.Begin())
 	defer func() { _ = tx.Rollback() }()
 
-	var a User
-	var b, c Tenant
+	var local User
+	var foreign Tenant
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &local, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize User struct: %s", err)
 	}
-	if err = randomize.Struct(seed, &b, tenantDBTypes, false, strmangle.SetComplement(tenantPrimaryKeyColumns, tenantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, tenantDBTypes, false, strmangle.SetComplement(tenantPrimaryKeyColumns, tenantColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &foreign, tenantDBTypes, false, tenantColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Tenant struct: %s", err)
 	}
 
-	if err := a.Insert(tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(tx, boil.Infer()); err != nil {
+	if err := foreign.Insert(tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Tenant{&b, &c} {
-		err = a.SetTenant(tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
+	local.TenantID = foreign.ID
+	if err := local.Insert(tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
 
-		if a.R.Tenant != x {
-			t.Error("relationship struct not set to correct value")
-		}
+	check, err := local.Tenant().One(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if x.R.Users[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.TenantID != x.ID {
-			t.Error("foreign key was wrong value", a.TenantID)
-		}
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
 
-		zero := reflect.Zero(reflect.TypeOf(a.TenantID))
-		reflect.Indirect(reflect.ValueOf(&a.TenantID)).Set(zero)
+	slice := UserSlice{&local}
+	if err = local.L.LoadTenant(tx, false, (*[]*User)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Tenant == nil {
+		t.Error("struct should have been eager loaded")
+	}
 
-		if err = a.Reload(tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if a.TenantID != x.ID {
-			t.Error("foreign key was wrong value", a.TenantID, x.ID)
-		}
+	local.R.Tenant = nil
+	if err = local.L.LoadTenant(tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Tenant == nil {
+		t.Error("struct should have been eager loaded")
 	}
 }
+
 func testUserToOneSetOpRoleUsingRole(t *testing.T) {
 	var err error
 
@@ -692,6 +636,62 @@ func testUserToOneSetOpRoleUsingRole(t *testing.T) {
 
 		if a.RoleID != x.ID {
 			t.Error("foreign key was wrong value", a.RoleID, x.ID)
+		}
+	}
+}
+func testUserToOneSetOpTenantUsingTenant(t *testing.T) {
+	var err error
+
+	tx := MustTx(boil.Begin())
+	defer func() { _ = tx.Rollback() }()
+
+	var a User
+	var b, c Tenant
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, tenantDBTypes, false, strmangle.SetComplement(tenantPrimaryKeyColumns, tenantColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, tenantDBTypes, false, strmangle.SetComplement(tenantPrimaryKeyColumns, tenantColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Tenant{&b, &c} {
+		err = a.SetTenant(tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Tenant != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.Users[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.TenantID != x.ID {
+			t.Error("foreign key was wrong value", a.TenantID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.TenantID))
+		reflect.Indirect(reflect.ValueOf(&a.TenantID)).Set(zero)
+
+		if err = a.Reload(tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.TenantID != x.ID {
+			t.Error("foreign key was wrong value", a.TenantID, x.ID)
 		}
 	}
 }

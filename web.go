@@ -1,7 +1,6 @@
 package hippo
 
 import (
-//	"fmt"
 	"html/template"
 	"github.com/gin-gonic/gin"
 	"github.com/nathanstitt/webpacking"
@@ -12,6 +11,7 @@ import (
 func InitWebpack(router *gin.Engine, config Configuration) *webpacking.WebPacking {
 	wpConfig := &webpacking.Config{
 		IsDev: IsDevMode,
+		DevPort: config.String("webpack_dev_port"),
 	}
 	packager, err := webpacking.New(wpConfig)
 	CheckError(err)
@@ -35,9 +35,12 @@ func CreateRouter() *gin.Engine {
 	return gin.New()
 }
 
+func InitViews(r *gin.Engine, config Configuration) {
+	r.LoadHTMLGlob("views/*.html")
+}
+
 func AddGraphqlProxyRoutes(r *gin.Engine, config Configuration) {
 	graphql_port := config.Int("graphql_port")
-	r.LoadHTMLGlob("views/*")
 	r.OPTIONS("/v1/*query", allowCorsReply)
 	r.OPTIONS("/v1alpha1/*graphql", allowCorsReply)
 	r.POST("/v1/*query", reverseProxy(graphql_port))

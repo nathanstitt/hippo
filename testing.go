@@ -6,6 +6,7 @@ import (
 	"log"
 	"flag"
 	"bytes"
+	"strings"
 	"context"
 	"net/http"
 	"io/ioutil"
@@ -88,11 +89,15 @@ func (env *TestEnv) MakeRequest(
 	var body io.Reader
 	if options != nil {
 		if options.Body != nil {
-			body = bytes.NewReader([]byte(*options.Body))
+			body = strings.NewReader(*options.Body)
 		}
 	}
 	req, _ := http.NewRequest(method, path, body)
-	req.Header.Set("ContentType", contentType(method, options))
+	req.Header.Set("Content-Type", contentType(method, options))
+	// fmt.Printf("CT: %s\nBody: %s\n",
+	//	contentType(method, options),
+	//	*options.Body,
+	// )
 	if options != nil {
 		if options.User != nil {
 			req.Header.Set("Cookie",
@@ -198,7 +203,7 @@ func RunSpec(flags *TestFlags, testFunc func(*TestEnv)) {
 			},
 		})
 		router.LoadHTMLGlob("views/*")
-
+		InitViews(router, config)
 		flags.WithRoutes(router, config, webpack)
 	}
 

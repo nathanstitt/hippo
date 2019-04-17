@@ -60,6 +60,12 @@ func RenderErrorPage(message string, c *gin.Context, err *error) {
 	})
 }
 
+func RenderNotFoundPage(message string, c *gin.Context, err *error) {
+	c.HTML(http.StatusNotFound , "not-found.html", gin.H{
+		"message": message,
+	})
+}
+
 func allowCorsReply(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	c.Header("Access-Control-Allow-Origin", "*")
@@ -91,7 +97,6 @@ func RenderHomepage(signup *SignupData, err *error, c *gin.Context) {
 func RenderApplication(user *hm.User, c *gin.Context) {
 	cfg := GetConfig(c)
 	c.HTML(http.StatusOK, "application.html", gin.H{
-		"webDomain": cfg.String("web_domain"),
 		"bootstrapData": BootstrapData(user, cfg),
 	})
 }
@@ -116,10 +121,11 @@ func BootstrapData(user *hm.User, cfg Configuration) template.JS {
 	type BootstrapDataT map[string]interface{}
 	bootstrapData, err := json.Marshal(
 		BootstrapDataT{
+			"serverUrl": cfg.String("server_url"),
 			"user": user,
 			"graphql" : BootstrapDataT{
 				"token": JWTForUser(user, cfg),
-				"endpoint": cfg.String("web_domain"),
+				"endpoint": cfg.String("server_url"),
 			},
 		})
 	if err != nil {

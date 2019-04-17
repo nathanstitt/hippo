@@ -24,7 +24,7 @@ type Subscription = hm.Subscription
 var Subscriptions = hm.Subscriptions
 
 func ConnectDB(c Configuration) *sql.DB {
-	conn := c.String("db_conn_url")
+	conn := c.String("db_connection_url")
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
 		panic(fmt.Sprintf("invalid syntx for db_conn_url %s: %s\n", conn, err))
@@ -34,7 +34,7 @@ func ConnectDB(c Configuration) *sql.DB {
 		panic(fmt.Sprintf("unable to connect to DB using %s: %s\n", conn, pingErr))
 	}
 
-	hm.AddUserHook(boil.BeforeDeleteHook, ensureAdminAndGuest)
+	hm.AddUserHook(boil.BeforeDeleteHook, ensureOwnerAndGuest)
 
 	return db
 }
