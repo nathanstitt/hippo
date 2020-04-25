@@ -47,4 +47,5 @@ func AddGraphqlProxyRoutes(r *gin.Engine, config Configuration) {
 	r.POST("/v1alpha1/*graphql", reverseProxy(graphql_port))
 	r.POST("/apis/migrate", reverseProxy(graphql_port))
 	r.GET("/v1alpha1/*graphql", reverseProxy(graphql_port))
+	r.GET("/console/*q", reverseProxy(graphql_port))
 }
