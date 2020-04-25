@@ -2,7 +2,7 @@ package hippo
 
 import (
 	"fmt"
-	"github.com/matcornic/hermes"
+	"github.com/matcornic/hermes/v2"
 	"github.com/nathanstitt/hippo/models"
 )
 

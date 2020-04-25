@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 	"github.com/go-mail/mail"
-	"github.com/matcornic/hermes"
+	"github.com/matcornic/hermes/v2"
 	"github.com/nathanstitt/hippo/models"
 )
 

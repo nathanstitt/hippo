@@ -3,7 +3,7 @@ package hippo
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/matcornic/hermes"
+	"github.com/matcornic/hermes/v2"
 )
 
 var _ = Describe("Sending Email", func() {

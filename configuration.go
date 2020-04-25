@@ -3,7 +3,7 @@ package hippo
 import (
 	"strings"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/urfave/cli.v1"
+	"github.com/urfave/cli"
 	"github.com/urfave/cli/altsrc"
 )
 
